@@ -1,0 +1,122 @@
+#include "../includes/server.h"
+
+void getAMaze(game * g, int lenX, int lenY){
+    srand(time(NULL));
+    g->maze = malloc(lenX * sizeof(char *));
+    char ** visited = malloc(lenX * sizeof(char *));
+    for(int i=0;i<lenX;i++){
+        g->maze[i] = malloc(lenY);
+        visited[i] = malloc(lenY);
+        for(int j=0;j<lenY;j++){
+            g->maze[i][j] = CHARWALL;
+            visited[i][j] = ' ';
+        }
+    }
+    generatorMaze(g->maze, visited, 0, 0, lenX, lenY);
+    /*printMaze(maze,lenX,lenY);
+    printMaze(visited,lenX,lenY);*/
+    free(visited);
+}
+
+void printMaze(char ** maze, int lenX, int lenY){
+    for(int n = 0; n<lenX; n++)
+    {
+        for(int k = 0; k<lenY; k++)
+        {
+            printf("%c", maze[n][k]);
+        }
+        printf("%c", '\n');
+    }
+}
+
+void updateVisited(char ** maze, char ** visited, int sX, int sY, int lenX, int lenY){
+    if (sX + 1 < lenX && maze[sX+1][sY] != CHARPATH) {
+        int tempX = sX + 1;
+        if (tempX + 1 < lenX && visited[tempX + 1][sY] == 'v')
+            visited[tempX][sY] = '#';
+        else if (sY > 0 && visited[tempX][sY - 1] == 'v')
+            visited[tempX][sY] = '#';
+        else if (sY + 1 < lenY && visited[tempX][sY + 1] == 'v')
+            visited[tempX][sY] = '#';
+    }
+    if (sX > 0 && maze[sX-1][sY] != CHARPATH) {
+        int tempX = sX - 1;
+        if (tempX > 0 && visited[tempX - 1][sY] == 'v')
+            visited[tempX][sY] = '#';
+        else if (sY > 0 && visited[tempX][sY - 1] == 'v')
+            visited[tempX][sY] = '#';
+        else if (sY + 1 < lenY && visited[tempX][sY + 1] == 'v')
+            visited[tempX][sY] = '#';
+    }
+    if (sY + 1 < lenY && maze[sX][sY+1] != CHARPATH) {
+        int tempY = sY + 1;
+        if (tempY + 1 < lenY && visited[sX][tempY + 1] == 'v')
+            visited[sX][tempY] = '#';
+        else if (sX > 0 && visited[sX - 1][tempY] == 'v')
+            visited[sX][tempY] = '#';
+        else if (sX + 1 < lenX && visited[sX + 1][tempY] == 'v')
+            visited[sX][tempY] = '#';
+    }
+    if (sY > 0 && maze[sX][sY-1] != CHARPATH) {
+        int tempY = sY - 1;
+        if (tempY > 0 && visited[sX][tempY - 1] == 'v')
+            visited[sX][tempY] = '#';
+        else if (sX > 0 && visited[sX - 1][tempY] == 'v')
+            visited[sX][tempY] = '#';
+        else if (sX + 1 < lenX && visited[sX + 1][tempY] == 'v')
+            visited[sX][tempY] = '#';
+    }
+}
+
+void generatorMaze(char** maze, char** visited, int sX, int sY, int lenX, int lenY){
+    while((sY>0 && visited[sX][sY-1]== ' ') ||
+            (sX>0 && visited[sX-1][sY]== ' ') ||
+            (sY<lenY-1 && visited[sX][sY+1]== ' ') ||
+            (sX<lenX-1 && visited[sX+1][sY]== ' ')){
+
+        //usleep(1000*500);
+        int r = rand()%4;
+        /*printf("%d,%d, %d\n", sX, sY, r);
+        printMaze(maze, lenX, lenY);
+        printMaze(visited, lenX, lenY);*/
+        if(r==0){
+            if(sX+1<lenX && visited[sX+1][sY] == ' '){
+                sX++;
+                maze[sX][sY] = CHARPATH;
+                visited[sX][sY] = 'v';
+                updateVisited(maze,visited,sX,sY,lenX,lenY);
+                generatorMaze(maze,visited,sX,sY,lenX,lenY);
+                sX--;
+            }
+        }else if(r==1){
+            if(sX>0 && visited[sX-1][sY] == ' '){
+                sX--;
+                maze[sX][sY] = CHARPATH;
+                visited[sX][sY] = 'v';
+                updateVisited(maze,visited,sX,sY,lenX,lenY);
+                generatorMaze(maze,visited,sX,sY,lenX,lenY);
+                sX++;
+            }
+        }else if(r==2){
+            if(sY+1<lenY && visited[sX][sY+1] == ' '){
+                sY++;
+                maze[sX][sY] = CHARPATH;
+                visited[sX][sY] = 'v';
+                updateVisited(maze,visited,sX,sY,lenX,lenY);
+                generatorMaze(maze,visited,sX,sY,lenX,lenY);
+                sY--;
+            }
+        }else{
+            if(sY>0 && visited[sX][sY-1] == ' ') {
+                sY--;
+                maze[sX][sY] = CHARPATH;
+                visited[sX][sY] = 'v';
+                updateVisited(maze,visited,sX,sY,lenX,lenY);
+                generatorMaze(maze, visited, sX, sY, lenX, lenY);
+                sY++;
+            }
+
+        }
+
+    }
+}
