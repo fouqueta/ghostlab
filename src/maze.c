@@ -1,20 +1,25 @@
 #include "../includes/server.h"
 
-void getAMaze(game * g, int lenX, int lenY){
+void getAMaze(maze * laby){
     srand(time(NULL));
-    g->maze = malloc(lenX * sizeof(char *));
+    int lenX = laby->lenX;
+    int lenY = laby->lenY;
+    laby->maze = malloc(lenX * sizeof(char *));
     char ** visited = malloc(lenX * sizeof(char *));
     for(int i=0;i<lenX;i++){
-        g->maze[i] = malloc(lenY);
+        laby->maze[i] = malloc(lenY);
         visited[i] = malloc(lenY);
         for(int j=0;j<lenY;j++){
-            g->maze[i][j] = CHARWALL;
+            laby->maze[i][j] = CHARWALL;
             visited[i][j] = ' ';
         }
     }
-    generatorMaze(g->maze, visited, 0, 0, lenX, lenY);
+    generatorMaze(laby->maze, visited, 0, 0, lenX, lenY);
     /*printMaze(maze,lenX,lenY);
     printMaze(visited,lenX,lenY);*/
+    for(int i=0;i<lenX;i++){
+        free(visited[i]);
+    }
     free(visited);
 }
 

@@ -9,4 +9,3 @@
 #include <string.h>
 
 #include "game.h"
-#include "maze.h"
