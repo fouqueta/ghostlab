@@ -6,9 +6,9 @@ EXE := $(BIN_DIR)/server
 SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS   := -Wall -Wextra -lpthread
+CFLAGS   := -Wall -Wextra
 LDFLAGS  := -Llib
-LDLIBS   := -lm
+LDLIBS   := -lm -lpthread
 
 .PHONY: all clean
 
