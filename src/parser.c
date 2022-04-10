@@ -1,7 +1,9 @@
 #include "../includes/server.h"
 
 int sendGames(int fd){
+    pthread_mutex_lock(&verrou_main);
     uint8_t n = games_not_started.len;
+
     char * games = "GAMES \0";
     char * stars = "***\0";
 
@@ -37,6 +39,15 @@ int sendGames(int fd){
             perror("send");
             return -1;
         }
+    }
+    pthread_mutex_unlock(&verrou_main);
+    return 0;
+}
+
+int sendDunno(int fd){
+    char * message = "DUNNO***\0";
+    if(send(fd, message, strlen(message), 0) == -1){
+        return -1;
     }
     return 0;
 }

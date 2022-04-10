@@ -14,5 +14,6 @@
 
 extern games games_started;
 extern games games_not_started;
+extern pthread_mutex_t verrou_main;
 
 void* listen_player(void* args);

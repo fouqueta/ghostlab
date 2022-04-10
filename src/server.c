@@ -7,6 +7,8 @@ games games_not_started = {
         .len = 0
 };
 
+pthread_mutex_t verrou_main = PTHREAD_MUTEX_INITIALIZER;
+
 int main(int argc, char ** argv) {
     if(argc<2){
         printf("Missing port number !\n");
@@ -52,7 +54,6 @@ int main(int argc, char ** argv) {
     getAMaze(games_not_started.game_list[0]->laby);
     games_not_started.len = 1;*/
 
-
     //Boucle principale du serveur
     while(1){
         player * p = malloc(sizeof(player));
@@ -75,13 +76,53 @@ void* listen_player(void* args){
     player * p = (player *) args;
     memset(p->name,0,8);
 
-    int r = recv(p->sock, p->name, 8, 0);
+    int r = recv(p->sock, p->name, 8, MSG_NOSIGNAL);
     if(r==-1){
         perror("recv");
+        close(p->sock);
+        return NULL;
+    }else if(r==0){
+        printf("Error");
+        close(p->sock);
         return NULL;
     }
 
-    sendGames(p->sock);
+    if(sendGames(p->sock) == -1){
+        printf("Error in sendGames\nConnexion with %s is stopped !", p->name);
+        close(p->sock);
+        return NULL;
+    }
+
+
+    char * message = malloc(256);
+    while(1){
+        memset(message, 0, 256);
+        int len = recv(p->sock, message, 256, MSG_NOSIGNAL);
+        if(len==-1){
+            perror("recv");
+            break;
+        }else if(len<5){
+            printf("Error");
+            break;
+        }
+
+        char * action = malloc(6);
+        memcpy(action, message, 5);
+        action[5] = '\0';
+
+        if(strncmp(action, "GAME?", 5) == 0 && len==8){
+            sendGames(p->sock);
+        }
+        else{
+            sendDunno(p->sock);
+        }
+
+        free(action);
+    }
+    free(message);
+    close(p->sock);
+    free(p);
+
 
     return 0;
 }
