@@ -76,6 +76,7 @@ void* listen_player(void* args){
     player * p = (player *) args;
     memset(p->name,0,8);
 
+    //TODO: recv while not recv "***"
     int r = recv(p->sock, p->name, 8, MSG_NOSIGNAL);
     if(r==-1){
         perror("recv");
