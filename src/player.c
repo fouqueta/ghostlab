@@ -1,0 +1,51 @@
+#include "../includes/server.h"
+
+int is_same_player(player * p1, player * p2){
+    return strncmp(p1->name,p2->name, 8) == 0 && p1->sock == p2->sock;
+}
+
+int name_taken(player_node * first, char name[8]){
+    if(first == NULL){
+        return 0;
+    }else if(strncmp(first->p->name, name, 8) == 0){
+        return 1;
+    }else{
+        return name_taken(first->next,name);
+    }
+}
+
+int in_list(player_node * first, player * p){
+    if(first == NULL){
+        return 0;
+    }else if(is_same_player(first->p, p)){
+        return 1;
+    }else{
+        return in_list(first->next,p);
+    }
+}
+
+player_node * add_player(player_node * first, player * p){
+    if(in_list(first,p)){
+        return first;
+    }
+    player_node * new = malloc(sizeof(player_node));
+    new->p = p;
+    new->next = first;
+    return new;
+}
+
+player_node * remove_player(player_node * first, player * p){
+    if(first==NULL){
+        return NULL;
+    }else if(is_same_player(first->p, p)){
+        return first->next;
+    }else if(is_same_player(first->next->p, p)){
+        player_node * to_free = first->next;
+        first->next = first->next->next;
+        free(to_free);
+        return first;
+    }else{
+        first->next = remove_player(first->next, p);
+        return first;
+    }
+}

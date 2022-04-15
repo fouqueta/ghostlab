@@ -9,6 +9,10 @@ games games_not_started = {
 
 pthread_mutex_t verrou_main = PTHREAD_MUTEX_INITIALIZER;
 
+player_array list_of_players = {
+        .first = NULL
+};
+
 int main(int argc, char ** argv) {
     if(argc<2){
         printf("Missing port number !\n");
@@ -68,6 +72,7 @@ int main(int argc, char ** argv) {
         pthread_t th;
         pthread_create(&th,NULL,listen_player,p);
     }
+
     close(sock_server);
     return 0;
 }
@@ -76,7 +81,7 @@ void* listen_player(void* args){
     player * p = (player *) args;
     memset(p->name,0,8);
 
-    //TODO: recv while not recv "***"
+    //TODO: Que faire si le nom est déjà prit ?
     int r = recv(p->sock, p->name, 8, MSG_NOSIGNAL);
     if(r==-1){
         perror("recv");
@@ -93,11 +98,14 @@ void* listen_player(void* args){
         close(p->sock);
         return NULL;
     }
-
+    pthread_mutex_lock(&verrou_main);
+    list_of_players.first = add_player(list_of_players.first, p);
+    pthread_mutex_unlock(&verrou_main);
 
     char * message = malloc(256);
     while(1){
         memset(message, 0, 256);
+        //TODO: recv while not recv "***"
         int len = recv(p->sock, message, 256, MSG_NOSIGNAL);
         if(len==-1){
             perror("recv");
@@ -121,6 +129,11 @@ void* listen_player(void* args){
         free(action);
     }
     free(message);
+
+    pthread_mutex_lock(&verrou_main);
+    list_of_players.first = remove_player(list_of_players.first, p);
+    pthread_mutex_unlock(&verrou_main);
+
     close(p->sock);
     free(p);
 
