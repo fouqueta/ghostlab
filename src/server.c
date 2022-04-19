@@ -101,22 +101,40 @@ void* listen_player(void* args){
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
-        if(p==NULL){
+        if(p==NULL || p->g->is_start == 0){
             if(strncmp(action, "GAME?", 5) == 0 && len==8){
                 sendGames(sock);
-            }else if(strncmp(action, "NEWPL", 5) == 0){
+            }else if(strncmp(action, "NEWPL", 5) == 0 && p==NULL){
                 //TODO: Creation d'une game
-            }else if(strncmp(action, "REGIS", 5) == 0){
+            }else if(strncmp(action, "REGIS", 5) == 0 && p==NULL){
                 //TODO: Rejoindre une game
+            }else if(strncmp(acion, "UNREG", 5) == 0){
+                //TODO: Desincrire
+            }else if(strncmp(action, "SIZE?", 5) == 0){
+                //TODO: Taille du labyrinthe
+            }else if(strncmp(action, "LIST?", 5) == 0){
+                //TODO: Liste des joueurs de la partie
+            }else if(strncmp(action, "START", 5) == 0){
+                //TODO: Joueur prêt
             }else{
                 sendDunno(sock);
             }
-        }else if(p->g->is_start == 0){
-            //TODO: Cas si la partie n'a pas commencée
-            sendDunno(sock);
         }else if(p->g->is_start == 1){
             //TODO: Cas si la partie a commencée
-            sendDunno(sock);
+            if(strncmp(action, "UPMOV", 5) == 0){
+                //TODO: Se deplace vers le haut
+            }else if(strncmp(action, "DOMOV", 5) == 0){
+                //TODO: Se deplace vers le bas
+            }else if(strncmp(action, "LEMOV", 5) == 0){
+                //TODO: Se deplace vers la gauche
+            }else if(strncmp(action, "RIMOV", 5) == 0){
+                //TODO: Se deplace vers la droite
+            }else if(strncmp(action, "IQUIT", 5) == 0){
+                //TODO: Quitter la partie
+            }else{
+                sendDunno(sock);
+            }
+            //TODO: Ajouter les commandes manquantes !
         }else{
             //Es-ce qu'il y a d'autres cas ?
             sendDunno(sock);
