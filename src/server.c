@@ -9,10 +9,6 @@ games games_not_started = {
 
 pthread_mutex_t verrou_main = PTHREAD_MUTEX_INITIALIZER;
 
-player_array list_of_players = {
-        .first = NULL
-};
-
 int main(int argc, char ** argv) {
     if(argc<2){
         printf("Missing port number !\n");
@@ -60,17 +56,17 @@ int main(int argc, char ** argv) {
 
     //Boucle principale du serveur
     while(1){
-        player * p = malloc(sizeof(player));
+        int * sock2 = malloc(sizeof(int));
+
         struct sockaddr_in c;
         socklen_t size = sizeof(c);
-        int sock2 = accept(sock_server, (struct sockaddr *)&c, &size);
-        if(sock2<0){
+        *sock2 = accept(sock_server, (struct sockaddr *)&c, &size);
+        if(*sock2<0){
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        p->sock = sock2;
         pthread_t th;
-        pthread_create(&th,NULL,listen_player,p);
+        pthread_create(&th,NULL,listen_player,sock2);
     }
 
     close(sock_server);
@@ -78,35 +74,21 @@ int main(int argc, char ** argv) {
 }
 
 void* listen_player(void* args){
-    player * p = (player *) args;
-    memset(p->name,0,8);
+    int sock = *(int *) args;
 
-    //TODO: Que faire si le nom est déjà prit ?
-    int r = recv(p->sock, p->name, 8, MSG_NOSIGNAL);
-    if(r==-1){
-        perror("recv");
-        close(p->sock);
-        return NULL;
-    }else if(r==0){
-        printf("Error");
-        close(p->sock);
-        return NULL;
-    }
+    player * p = NULL;
 
-    if(sendGames(p->sock) == -1){
+    if(sendGames(sock) == -1){
         printf("Error in sendGames\nConnexion with %s is stopped !", p->name);
         close(p->sock);
         return NULL;
     }
-    pthread_mutex_lock(&verrou_main);
-    list_of_players.first = add_player(list_of_players.first, p);
-    pthread_mutex_unlock(&verrou_main);
 
     char * message = malloc(256);
     while(1){
         memset(message, 0, 256);
         //TODO: recv while not recv "***"
-        int len = recv(p->sock, message, 256, MSG_NOSIGNAL);
+        int len = recv(sock, message, 256, MSG_NOSIGNAL);
         if(len==-1){
             perror("recv");
             break;
@@ -120,22 +102,16 @@ void* listen_player(void* args){
         action[5] = '\0';
 
         if(strncmp(action, "GAME?", 5) == 0 && len==8){
-            sendGames(p->sock);
+            sendGames(sock);
         }
         else{
-            sendDunno(p->sock);
+            sendDunno(sock);
         }
 
         free(action);
     }
     free(message);
-
-    pthread_mutex_lock(&verrou_main);
-    list_of_players.first = remove_player(list_of_players.first, p);
-    pthread_mutex_unlock(&verrou_main);
-
-    close(p->sock);
-    free(p);
+    close(sock);
 
 
     return 0;
