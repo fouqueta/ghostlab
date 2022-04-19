@@ -7,6 +7,7 @@ typedef struct game{
     player_array list;
     uint8_t id_game;
     int is_start;
+    pthread_mutex_t verrou_server;
     maze * laby;
     //TODO: Fantômes (les places dans le maze ?)
 } game;

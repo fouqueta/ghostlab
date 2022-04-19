@@ -24,6 +24,13 @@ int in_list(player_node * first, player * p){
     }
 }
 
+int len_list(player_node * first){
+    if(first == NULL){
+        return 0;
+    }
+    return 1 + len_list(first->next);
+}
+
 player_node * add_player(player_node * first, player * p){
     if(in_list(first,p)){
         return first;
@@ -48,4 +55,13 @@ player_node * remove_player(player_node * first, player * p){
         first->next = remove_player(first->next, p);
         return first;
     }
+}
+
+player * get_n_player(player_node * first, int n){
+    if(first == NULL) {
+        return NULL;
+    }else if(n==0){
+        return first->p;
+    }
+    return get_n_player(first->next, n-1);
 }

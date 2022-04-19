@@ -6,7 +6,11 @@ struct game;
 typedef struct player{
     char name[8];
     int port;
-    struct game * g;
+    game * g;
+
+    int x;
+    int y;
+    int score;
 
 } player;
 
@@ -29,9 +33,14 @@ int name_taken(player_node * first, char name[8]);
 //Regarde si un joueur est déjà dans la liste
 int in_list(player_node * first, player * p);
 
+//Retourne le nombre de joueurs
+int len_list(player_node * first);
+
 //Rajoute un joueur à la liste
 player_node * add_player(player_node * first, player * p);
 
 //Retire un joueur de la liste
 player_node * remove_player(player_node * first, player * p);
 
+//Retourne le n-éme joueur de la liste
+player * get_n_player(player_node * first, int n);

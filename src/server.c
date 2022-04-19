@@ -104,12 +104,17 @@ void* listen_player(void* args){
         if(p==NULL || p->g->is_start == 0){
             //Cas si le joueurs n'est dans aucune partie ou la partie n'as pas commancée
             if(strncmp(action, "GAME?", 5) == 0 && len==8){
-                sendGames(sock);
+                if(sendGames(sock) == -1) {
+                    if(p->g->is_start == 0){
+                        //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
+                    }
+                    break;
+                }
             }else if(strncmp(action, "NEWPL", 5) == 0 && p==NULL){
                 //TODO: Creation d'une game
             }else if(strncmp(action, "REGIS", 5) == 0 && p==NULL){
                 //TODO: Rejoindre une game
-            }else if(strncmp(acion, "UNREG", 5) == 0){
+            }else if(strncmp(action, "UNREG", 5) == 0){
                 //TODO: Desincrire
             }else if(strncmp(action, "SIZE?", 5) == 0){
                 //TODO: Taille du labyrinthe
@@ -118,7 +123,12 @@ void* listen_player(void* args){
             }else if(strncmp(action, "START", 5) == 0){
                 //TODO: Joueur prêt
             }else{
-                sendDunno(sock);
+                if(sendDunno(sock) == -1){
+                    if(p->g->is_start == 0){
+                        //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
+                    }
+                    break;
+                }
             }
         }else if(p->g->is_start == 1){
             //Cas si la partie a commencée
@@ -133,11 +143,19 @@ void* listen_player(void* args){
             }else if(strncmp(action, "IQUIT", 5) == 0){
                 //TODO: Quitter la partie
             }else if(strncmp(action, "GLIS?", 5) == 0){
-                //TODO: Liste des joueurs dans la partie
+                //Liste des joueurs dans la partie du joueur
+                if(sendGList(sock, p->g) == -1){
+                    //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
+                    break;
+                }
             }else if(strncmp(action, "MALL?", 5) == 0) {
                 //TODO: Envoye un message à tout les autres joueurs
             }else{
-                sendDunno(sock);
+                if(sendDunno(sock) == -1){
+                    //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
+                    break;
+                }
+
             }
         }else{
             //Es-ce qu'il y a d'autres cas ?
