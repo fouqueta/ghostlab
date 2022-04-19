@@ -79,8 +79,8 @@ void* listen_player(void* args){
     player * p = NULL;
 
     if(sendGames(sock) == -1){
-        printf("Error in sendGames\nConnexion with %s is stopped !", p->name);
-        close(p->sock);
+        printf("Error in sendGames\nConnexion with a player is stopped !");
+        close(sock);
         return NULL;
     }
 
