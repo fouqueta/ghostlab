@@ -1,7 +1,7 @@
 #include "../includes/server.h"
 
 int is_same_player(player * p1, player * p2){
-    return strncmp(p1->name,p2->name, 8) == 0 && p1->sock == p2->sock;
+    return strncmp(p1->name,p2->name, 8) == 0;
 }
 
 int name_taken(player_node * first, char name[8]){

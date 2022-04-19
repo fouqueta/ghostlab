@@ -35,14 +35,15 @@ int main(int argc, char ** argv) {
         exit(EXIT_FAILURE);
     }
 
-    //
+    //Listen au port
     r = listen(sock_server, 0);
     if(r!=0){
         perror("listen");
         exit(EXIT_FAILURE);
     }
 
-    //Test for message GAMES
+    //Test pour le message message GAMES
+    //"Cree une partie" entre guillemets
     //TODO: Delete
     /*games_not_started.game_list = malloc(sizeof(game));
     games_not_started.game_list[0] = malloc(sizeof(game));
@@ -56,17 +57,17 @@ int main(int argc, char ** argv) {
 
     //Boucle principale du serveur
     while(1){
-        int * sock2 = malloc(sizeof(int));
+        int * sock_player = malloc(sizeof(int));
 
         struct sockaddr_in c;
         socklen_t size = sizeof(c);
-        *sock2 = accept(sock_server, (struct sockaddr *)&c, &size);
-        if(*sock2<0){
+        *sock_player = accept(sock_server, (struct sockaddr *)&c, &size);
+        if(*sock_player<0){
             perror("accept");
             exit(EXIT_FAILURE);
         }
         pthread_t th;
-        pthread_create(&th,NULL,listen_player,sock2);
+        pthread_create(&th,NULL,listen_player,sock_player);
     }
 
     close(sock_server);
@@ -84,11 +85,11 @@ void* listen_player(void* args){
         return NULL;
     }
 
-    char * message = malloc(256);
+    char * message = malloc(1024);
     while(1){
-        memset(message, 0, 256);
+        memset(message, 0, 1024);
         //TODO: recv while not recv "***"
-        int len = recv(sock, message, 256, MSG_NOSIGNAL);
+        int len = recv(sock, message, 1024, MSG_NOSIGNAL);
         if(len==-1){
             perror("recv");
             break;
@@ -100,11 +101,24 @@ void* listen_player(void* args){
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
-
-        if(strncmp(action, "GAME?", 5) == 0 && len==8){
-            sendGames(sock);
-        }
-        else{
+        if(p==NULL){
+            if(strncmp(action, "GAME?", 5) == 0 && len==8){
+                sendGames(sock);
+            }else if(strncmp(action, "NEWPL", 5) == 0){
+                //TODO: Creation d'une game
+            }else if(strncmp(action, "REGIS", 5) == 0){
+                //TODO: Rejoindre une game
+            }else{
+                sendDunno(sock);
+            }
+        }else if(p->g->is_start == 0){
+            //TODO: Cas si la partie n'a pas commencée
+            sendDunno(sock);
+        }else if(p->g->is_start == 1){
+            //TODO: Cas si la partie a commencée
+            sendDunno(sock);
+        }else{
+            //Es-ce qu'il y a d'autres cas ?
             sendDunno(sock);
         }
 
