@@ -102,6 +102,7 @@ void* listen_player(void* args){
         memcpy(action, message, 5);
         action[5] = '\0';
         if(p==NULL || p->g->is_start == 0){
+            //Cas si le joueurs n'est dans aucune partie ou la partie n'as pas commancée
             if(strncmp(action, "GAME?", 5) == 0 && len==8){
                 sendGames(sock);
             }else if(strncmp(action, "NEWPL", 5) == 0 && p==NULL){
@@ -120,7 +121,7 @@ void* listen_player(void* args){
                 sendDunno(sock);
             }
         }else if(p->g->is_start == 1){
-            //TODO: Cas si la partie a commencée
+            //Cas si la partie a commencée
             if(strncmp(action, "UPMOV", 5) == 0){
                 //TODO: Se deplace vers le haut
             }else if(strncmp(action, "DOMOV", 5) == 0){
@@ -131,10 +132,13 @@ void* listen_player(void* args){
                 //TODO: Se deplace vers la droite
             }else if(strncmp(action, "IQUIT", 5) == 0){
                 //TODO: Quitter la partie
+            }else if(strncmp(action, "GLIS?", 5) == 0){
+                //TODO: Liste des joueurs dans la partie
+            }else if(strncmp(action, "MALL?", 5) == 0) {
+                //TODO: Envoye un message à tout les autres joueurs
             }else{
                 sendDunno(sock);
             }
-            //TODO: Ajouter les commandes manquantes !
         }else{
             //Es-ce qu'il y a d'autres cas ?
             sendDunno(sock);
