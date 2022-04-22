@@ -45,7 +45,7 @@ int main(int argc, char ** argv) {
     //Test pour le message message GAMES
     //"Cree une partie" entre guillemets
     //TODO: Delete
-    /*games_not_started.game_list = malloc(sizeof(game));
+    games_not_started.game_list = malloc(sizeof(game));
     games_not_started.game_list[0] = malloc(sizeof(game));
     games_not_started.game_list[0]->nb_players = 1;
     games_not_started.game_list[0]->id_game = 1;
@@ -53,10 +53,19 @@ int main(int argc, char ** argv) {
     games_not_started.game_list[0]->laby->lenY = 10;
     games_not_started.game_list[0]->laby->lenX = 10;
     getAMaze(games_not_started.game_list[0]->laby);
-    games_not_started.len = 1;*/
+
+    games_not_started.game_list[1] = malloc(sizeof(game));
+    games_not_started.game_list[1]->nb_players = 4;
+    games_not_started.game_list[1]->id_game = 2;
+    games_not_started.game_list[1]->laby = malloc(sizeof(maze));
+    games_not_started.game_list[1]->laby->lenY = 20;
+    games_not_started.game_list[1]->laby->lenX = 40;
+    getAMaze(games_not_started.game_list[1]->laby);
+
+    games_not_started.len = 2;
 
     //Boucle principale du serveur
-    while(1){
+    while(1) {
         int * sock_player = malloc(sizeof(int));
 
         struct sockaddr_in c;
