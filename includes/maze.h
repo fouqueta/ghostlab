@@ -1,21 +1,21 @@
-//Char pour le chemin
+//Char - Chemin
 #define CHARPATH ' '
 
-//Char reprensant les murs
+//Char - Murs
 #define CHARWALL 'X'
 
-//Structure reprensentant le labyrinthe
+//Structure - Labyrinthe
 typedef struct maze{
     char ** maze;
     int lenX;
     int lenY;
-    //TODO: mettre liste avec position ds joueurs ici ?
+    //TODO: Liste avec position ds joueurs ici ?
 } maze;
 
-//Repenlit le structure maze avec un labyrinthe
+//Remplissage d'une structure maze avec un labyrinthe
 void getAMaze(maze * laby);
 
-//Genere un labyrinthe
+//Génère un labyrinthe
 void generatorMaze(char** maze, char** visited, int sX, int sY, int lenX, int lenY);
 
 //Affiche un labyrinthe

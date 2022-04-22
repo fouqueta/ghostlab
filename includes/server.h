@@ -12,7 +12,7 @@
 #include "game.h"
 #include "parser.h"
 
-//TODO: changer le façon dont les parties sont stockés ?
+//TODO: Changer la façon dont les parties sont stockées ?
 extern games games_started;
 extern games games_not_started;
 

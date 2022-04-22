@@ -1,7 +1,7 @@
 #include "player.h"
 #include "maze.h"
 
-//Structure representat les parties
+//Structure - Parties
 typedef struct game{
     uint8_t nb_players;
     player_array list;
@@ -12,8 +12,8 @@ typedef struct game{
     //TODO: Fantômes (les places dans le maze ?)
 } game;
 
-//Un ensemble de parties
+//Structure - Ensemble de parties
 typedef struct games{
     game ** game_list;
     uint8_t len;
-}games;
+} games;

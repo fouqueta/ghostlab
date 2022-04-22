@@ -1,8 +1,8 @@
-//Redefinition pour eviter des problèmes avec les includes recursifs !
+//Redéfinition - Correction d'includes récursifs
 typedef struct game game;
 struct game;
 
-//Structure reprensentant un joueur
+//Structure - Joueur
 typedef struct player{
     char name[8];
     int port;
@@ -14,7 +14,7 @@ typedef struct player{
 
 } player;
 
-//List chainéé de joeurs
+//Structure - Liste chainée de joueurs
 typedef struct player_node{
     player * p;
     struct player_node * next;
@@ -24,10 +24,10 @@ typedef struct player_array{
     player_node * first;
 } player_array;
 
-//regarde si deux joueurs sont égaux
+//Regarde si deux joueurs sont égaux
 int is_same_player(player * p1, player * p2);
 
-//Regarde si le nom est déjà utilisé par quelqu'un de la liste
+//Regarde si le nom est déjà utilisé par un autre joueur
 int name_taken(player_node * first, char name[8]);
 
 //Regarde si un joueur est déjà dans la liste
@@ -36,7 +36,7 @@ int in_list(player_node * first, player * p);
 //Retourne le nombre de joueurs
 int len_list(player_node * first);
 
-//Rajoute un joueur à la liste
+//Ajoute un joueur à la liste
 player_node * add_player(player_node * first, player * p);
 
 //Retire un joueur de la liste

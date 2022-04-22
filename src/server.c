@@ -10,34 +10,34 @@ games games_not_started = {
 pthread_mutex_t verrou_main = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char ** argv) {
-    if(argc<2){
+    if(argc < 2){
         printf("Missing port number !\n");
         exit(EXIT_FAILURE);
     }
 
     //Creation de la socket
     int sock_server = socket(PF_INET, SOCK_STREAM, 0);
-    if(sock_server==-1){
-        perror("socket");
+    if(sock_server == -1){
+        perror("Socket");
         exit(EXIT_FAILURE);
     }
 
     struct sockaddr_in addr_sock = {
-            .sin_family = AF_INET,
-            .sin_port = htons(atoi(argv[1])),
-            .sin_addr.s_addr = htonl(INADDR_ANY)
+        .sin_family = AF_INET,
+        .sin_port = htons(atoi(argv[1])),
+        .sin_addr.s_addr = htonl(INADDR_ANY)
     };
 
     //Bind socket
-    int r = bind(sock_server, (struct sockaddr *)&addr_sock, sizeof(addr_sock));
-    if(r==-1){
+    int count = bind(sock_server, (struct sockaddr *)&addr_sock, sizeof(addr_sock));
+    if(count == -1){
         perror("bind");
         exit(EXIT_FAILURE);
     }
 
     //Listen au port
-    r = listen(sock_server, 0);
-    if(r!=0){
+    count = listen(sock_server, 0);
+    if(count!=0){
         perror("listen");
         exit(EXIT_FAILURE);
     }
@@ -67,7 +67,7 @@ int main(int argc, char ** argv) {
             exit(EXIT_FAILURE);
         }
         pthread_t th;
-        pthread_create(&th,NULL,listen_player,sock_player);
+        pthread_create(&th, NULL, listen_player, sock_player);
     }
 
     close(sock_server);
@@ -77,7 +77,7 @@ int main(int argc, char ** argv) {
 void* listen_player(void* args){
     int sock = *(int *) args;
 
-    player * p = NULL;
+    player * player_infos = NULL;
 
     if(sendGames(sock) == -1){
         printf("Error in sendGames\nConnexion with a player is stopped !");
@@ -89,11 +89,11 @@ void* listen_player(void* args){
     while(1){
         memset(message, 0, 1024);
         //TODO: recv while not recv "***"
-        int len = recv(sock, message, 1024, MSG_NOSIGNAL);
-        if(len==-1){
-            perror("recv");
+        int buffer_size = recv(sock, message, 1024, MSG_NOSIGNAL);
+        if(buffer_size == -1){
+            perror("Recv");
             break;
-        }else if(len<5){
+        }else if(buffer_size<5){
             printf("Error");
             break;
         }
@@ -101,18 +101,18 @@ void* listen_player(void* args){
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
-        if(p==NULL || p->g->is_start == 0){
+        if(player_infos == NULL || player_infos->g->is_start == 0){
             //Cas si le joueurs n'est dans aucune partie ou la partie n'as pas commancée
-            if(strncmp(action, "GAME?", 5) == 0 && len==8){
+            if(strncmp(action, "GAME?", 5) == 0 && buffer_size == 8){
                 if(sendGames(sock) == -1) {
-                    if(p->g->is_start == 0){
+                    if(player_infos->g->is_start == 0){
                         //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
                     }
                     break;
                 }
-            }else if(strncmp(action, "NEWPL", 5) == 0 && p==NULL){
+            }else if(strncmp(action, "NEWPL", 5) == 0 && player_infos == NULL){
                 //TODO: Creation d'une game
-            }else if(strncmp(action, "REGIS", 5) == 0 && p==NULL){
+            }else if(strncmp(action, "REGIS", 5) == 0 && player_infos == NULL){
                 //TODO: Rejoindre une game
             }else if(strncmp(action, "UNREG", 5) == 0){
                 //TODO: Desincrire
@@ -124,13 +124,13 @@ void* listen_player(void* args){
                 //TODO: Joueur prêt
             }else{
                 if(sendDunno(sock) == -1){
-                    if(p->g->is_start == 0){
+                    if(player_infos->g->is_start == 0){
                         //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
                     }
                     break;
                 }
             }
-        }else if(p->g->is_start == 1){
+        }else if(player_infos->g->is_start == 1){
             //Cas si la partie a commencée
             if(strncmp(action, "UPMOV", 5) == 0){
                 //TODO: Se deplace vers le haut
@@ -144,7 +144,7 @@ void* listen_player(void* args){
                 //TODO: Quitter la partie
             }else if(strncmp(action, "GLIS?", 5) == 0){
                 //Liste des joueurs dans la partie du joueur
-                if(sendGList(sock, p->g) == -1){
+                if(sendGList(sock, player_infos->g) == -1){
                     //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
                     break;
                 }
