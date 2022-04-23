@@ -1,22 +1,100 @@
 import java.net.*;
 import java.io.*;
-import java.math.*;
 import java.util.Scanner;
 
 public class Client {
     private boolean start = false;
     private boolean inscrit = false;
 
-    public void doPreGameActions(Socket fdSock) {
+    public static short byteArrayToShortSwap(byte[] buffer, int offset) {
+        short value = 0;
+        for (int i = 0; i < 2; i++) {
+            value |= (buffer[i + offset] & 0x000000FF) << (i * 8);
+        }            
+        return value;
+    }
+
+    public static byte[] concatByteArrays(byte[] b1, byte[] b2) {
+        byte[] res = new byte[b1.length + b2.length];
+        System.arraycopy(b1, 0, res, 0, b1.length);
+        System.arraycopy(b2, 0, res, b1.length, b2.length);
+        return res;
+    }
+
+    public static byte[] addStars(byte[] b) {
+        byte[] stars = "***".getBytes();
+        return concatByteArrays(b, stars);
+    }
+
+    // pour les requetes de format [5char***]
+    public String sendSimpleReq (OutputStream os, String action) throws IOException {
+        byte[] byteAction = action.getBytes();
+        byte[] req = addStars(byteAction);
+        os.write(req);
+        os.flush();
+        return new String(req);
+    }
+
+    // pour les requetes de format [5char␣x***], avec x sur un octet
+    public String send1ParamReq (OutputStream os, String action, short param) throws IOException {
+        byte[] byteAction = action.getBytes();
+        byte[] byteParam = { ' ', (byte)param }; //verifier comment marche le downcast
+        byte[] req = addStars(concatByteArrays(byteAction, byteParam));
+        os.write(req);
+        os.flush();
+        return new String(req);
+    }
+
+
+    public void preGameActionNEWPL(InputStream is, PrintWriter pw) { // [NEWPL␣id␣port***] -> [REGOK␣m***] ou [REGNO***]
+
+    }
+
+    public void preGameActionREGIS(InputStream is, PrintWriter pw) { // [REGIS␣id␣port␣m***] -> [REGOK␣m***] ou [REGNO***]
+    
+    }
+
+    public void preGameActionUNREG(InputStream is, OutputStream os) { // [UNREG***] -> [UNROK␣m***] ou [DUNNO***]
+        try {
+            String req = sendSimpleReq(os, "UNREG");
+            System.out.println(req);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void preGameActionSIZE(InputStream is, PrintWriter pw) { // [SIZE?␣m***] -> [SIZE!␣m␣h␣w***] ou [DUNNO***]
+
+    }
+
+    public void preGameActionLIST(InputStream is, PrintWriter pw) { // [LIST?␣m***] -> [LIST!␣m␣s***] ou [PLAYR␣id***] ou [DUNNO***]
+
+    }
+
+    public void preGameActionGAME(InputStream is, OutputStream os) { //[GAME?***] -> [GAMES␣n***] ou [OGAME␣m␣s***]
+        try {
+            String req = sendSimpleReq(os, "GAME?");
+            System.out.println(req);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void preGameActionSTART(Socket fdSock) { //[START***]
+        
+    }
+
+
+
+    public void doPreGameActions(InputStream is, OutputStream os) {
         Scanner sc = new Scanner(System.in);
-        // TODO while(pas encore envoye start) : faire les 6 sysout avec les entrees clavier/switch correspondants
-        // avec un if(inscrit dans une partie) ne pas afficher les 2 premiers sysout
+
         while (!this.start) { //tant que le joueur n'a pas envoyé start, le joueur peut faire certaines actions
             System.out.println("\nTapez");
             System.out.println("1 pour savoir la liste des parties non commencees");
             System.out.println("2 pour savoir la liste des joueurs d'une partie");
             System.out.println("3 pour savoir la taille du labyrinthe d'une partie");
-            System.out.println("4 pour vous désinscrire d'une partie");
+            System.out.println("4 pour vous désinscrire de la partie ou vous etes inscrit");
             System.out.println("5 pour quitter le jeu");
             if (!this.inscrit) {
                 System.out.println("6 pour creer une nouvelle partie");
@@ -79,7 +157,7 @@ public class Client {
         try{
             Socket fdSock = new Socket("127.0.0.1", portTCP);
             InputStream is = fdSock.getInputStream();
-            PrintWriter pw = new PrintWriter(new OutputStreamWriter(fdSock.getOutputStream()));
+            OutputStream os = fdSock.getOutputStream();
             
             byte[] buffer = new byte[10];
 
@@ -100,10 +178,10 @@ public class Client {
                 if(bytesRead == -1) { break; }
             }
 
-            client.doPreGameActions(fdSock);
+            client.doPreGameActions(is, os);
             
             is.close();
-            pw.close();
+            os.close();
             fdSock.close();
         }
         catch(Exception e){
