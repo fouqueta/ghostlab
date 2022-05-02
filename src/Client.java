@@ -120,7 +120,7 @@ public class Client {
         }
         //Reception des reponses [OGAME␣m␣s***]
         for (; nbParties != 0; nbParties--) {
-            byte[] rep2 = new byte[MAX_BUFFER];
+            byte[] rep2 = new byte[12];
             int bytesRead = is.read(rep2);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
@@ -299,7 +299,7 @@ public class Client {
             writeReq(os, req);
 
             //Reception de la reponse ([LIST!␣m␣s***] et s reponses [PLAYR␣id***]) ou [DUNNO***]
-            byte[] rep = new byte[MAX_BUFFER];
+            byte[] rep = new byte[12];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
@@ -318,7 +318,7 @@ public class Client {
 
                     //Reception de s reponse(s) [PLAYR␣id***]
                     for (; nbJoueurs != 0; nbJoueurs--) {
-                        byte[] rep2 = new byte[MAX_BUFFER];
+                        byte[] rep2 = new byte[17];
                         bytesRead = is.read(rep2);
                         if (bytesRead < 1) {
                             System.out.println(MESS_ERROR);
@@ -357,7 +357,7 @@ public class Client {
             writeReq(os, req);
 
             //Reception de la reponse [GAMES␣n***] et de n reponse(s) [OGAME␣m␣s***]
-            byte[] rep = new byte[MAX_BUFFER];
+            byte[] rep = new byte[10];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
@@ -507,7 +507,7 @@ public class Client {
             OutputStream os = fdSock.getOutputStream();
             
             //Des qu'on se connecte, on doit recevoir les messages GAMES et OGAME
-            byte[] rep = new byte[MAX_BUFFER];
+            byte[] rep = new byte[10];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
                 client.close(fdSock, is, os, client.scanner);
