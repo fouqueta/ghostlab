@@ -1,11 +1,6 @@
 #include "../includes/server.h"
 
-games games_started = {
-        .len = 0
-};
-games games_not_started = {
-        .len = 0
-};
+game ** game_list;
 
 pthread_mutex_t verrou_main = PTHREAD_MUTEX_INITIALIZER;
 
@@ -42,27 +37,7 @@ int main(int argc, char ** argv) {
         exit(EXIT_FAILURE);
     }
 
-    //Test pour le message message GAMES
-    //"Cree une partie" entre guillemets
-    //TODO: Delete
-    games_not_started.game_list = malloc(sizeof(game));
-    games_not_started.game_list[0] = malloc(sizeof(game));
-    games_not_started.game_list[0]->nb_players = 1;
-    games_not_started.game_list[0]->id_game = 1;
-    games_not_started.game_list[0]->laby = malloc(sizeof(maze));
-    games_not_started.game_list[0]->laby->lenY = 10;
-    games_not_started.game_list[0]->laby->lenX = 10;
-    getAMaze(games_not_started.game_list[0]->laby);
-
-    games_not_started.game_list[1] = malloc(sizeof(game));
-    games_not_started.game_list[1]->nb_players = 4;
-    games_not_started.game_list[1]->id_game = 2;
-    games_not_started.game_list[1]->laby = malloc(sizeof(maze));
-    games_not_started.game_list[1]->laby->lenY = 20;
-    games_not_started.game_list[1]->laby->lenX = 40;
-    getAMaze(games_not_started.game_list[1]->laby);
-
-    games_not_started.len = 2;
+    init_game_list(game_list);
 
     //Boucle principale du serveur
     while(1) {
@@ -102,7 +77,7 @@ void* listen_player(void* args){
         if(buffer_size == -1){
             perror("Recv");
             break;
-        }else if(buffer_size<5){
+        }else if(buffer_size<0){
             printf("Error");
             break;
         }

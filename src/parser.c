@@ -2,7 +2,7 @@
 
 int sendGames(int fd){
     pthread_mutex_lock(&verrou_main);
-    uint8_t n = games_not_started.len;
+    uint8_t n = getNbNotStarted();
 
     char * games = "GAMES \0";
     char * stars = "***\0";
@@ -22,22 +22,25 @@ int sendGames(int fd){
     free(mess_games);
 
     char * ogame = "OGAME \0";
-    for(int i=0;i<n;i++){
-        char * message = malloc(strlen(ogame) + sizeof(uint8_t)*2 + 1 + sizeof(stars));
-        uint8_t idgame = games_not_started.game_list[i]->id_game;
-        uint8_t nbJoueurs = games_not_started.game_list[i]->nb_players;
+    for(int i=0;i<NB_GAMES;i++){
+        if(game_list[i]->state_game == 1){
+            pthread_mutex_lock(&game_list[i]->verrou_server);
+            char * message = malloc(strlen(ogame) + sizeof(uint8_t)*2 + 1 + sizeof(stars));
+            uint8_t idgame = game_list[i]->id_game;
+            uint8_t nbJoueurs = game_list[i]->nb_players;
+            pthread_mutex_unlock(&game_list[i]->verrou_server);
+            len = 0;
+            memmove(message+len, ogame, strlen(ogame)); len += strlen(ogame);
+            memmove(message+len, &idgame, sizeof(idgame)); len += sizeof(idgame);
+            memmove(message+len, " ", strlen(" ")); len += strlen(" ");
+            memmove(message+len, &nbJoueurs, sizeof(nbJoueurs)); len += sizeof(nbJoueurs);
+            memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
-        len = 0;
-        memmove(message+len, ogame, strlen(ogame)); len += strlen(ogame);
-        memmove(message+len, &idgame, sizeof(idgame)); len += sizeof(idgame);
-        memmove(message+len, " ", strlen(" ")); len += strlen(" ");
-        memmove(message+len, &nbJoueurs, sizeof(nbJoueurs)); len += sizeof(nbJoueurs);
-        memmove(message+len, stars, strlen(stars)); len += strlen(stars);
-
-        r = send(fd, message, len, 0);
-        if(r==-1){
-            perror("send");
-            return -1;
+            r = send(fd, message, len, 0);
+            if(r==-1){
+                perror("send");
+                return -1;
+            }
         }
     }
     pthread_mutex_unlock(&verrou_main);
