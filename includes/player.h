@@ -12,6 +12,8 @@ typedef struct player{
     int y;
     int score;
 
+    pthread_mutex_t verrou_player;
+
 } player;
 
 //Structure - Liste chainée de joueurs

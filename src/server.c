@@ -81,17 +81,16 @@ void* listen_player(void* args){
             printf("Error");
             break;
         }
+        printf("%s\n", message);
+        printf("%d\n", buffer_size);
 
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
         if(player_infos == NULL || player_infos->g->is_start == 0){
-            //Cas si le joueurs n'est dans aucune partie ou la partie n'as pas commancée
+            //Cas si le joueurs n'est dans aucune partie ou la partie n'as pas commencée
             if(strncmp(action, "GAME?", 5) == 0 && buffer_size == 8){
                 if(sendGames(sock) == -1) {
-                    if(player_infos->g->is_start == 0){
-                        //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
-                    }
                     break;
                 }
             }else if(strncmp(action, "NEWPL", 5) == 0 && player_infos == NULL){
@@ -101,16 +100,27 @@ void* listen_player(void* args){
             }else if(strncmp(action, "UNREG", 5) == 0){
                 //TODO: Desincrire
             }else if(strncmp(action, "SIZE?", 5) == 0){
-                //TODO: Taille du labyrinthe
+                int8_t m = message[6];
+                if(m<0 || m>NB_GAMES || game_list[m]->state_game == 0){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else if(sendSize(sock, game_list[m]) == -1){
+                    break;
+                }
             }else if(strncmp(action, "LIST?", 5) == 0){
-                //TODO: Liste des joueurs de la partie
+                int8_t m = message[6];
+                if(m<0 || m>NB_GAMES || game_list[m]->state_game == 0){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else if(sendList(sock, game_list[m]) == -1){
+                    break;
+                }
             }else if(strncmp(action, "START", 5) == 0){
                 //TODO: Joueur prêt
             }else{
                 if(sendDunno(sock) == -1){
-                    if(player_infos->g->is_start == 0){
-                        //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
-                    }
                     break;
                 }
             }
@@ -129,17 +139,14 @@ void* listen_player(void* args){
             }else if(strncmp(action, "GLIS?", 5) == 0){
                 //Liste des joueurs dans la partie du joueur
                 if(sendGList(sock, player_infos->g) == -1){
-                    //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
                     break;
                 }
             }else if(strncmp(action, "MALL?", 5) == 0) {
                 //TODO: Envoye un message à tout les autres joueurs
             }else{
                 if(sendDunno(sock) == -1){
-                    //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
                     break;
                 }
-
             }
         }else{
             //Es-ce qu'il y a d'autres cas ?
@@ -148,6 +155,8 @@ void* listen_player(void* args){
 
         free(action);
     }
+    /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
+    Si on arrive c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/
     free(message);
     close(sock);
 

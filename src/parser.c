@@ -16,6 +16,7 @@ int sendGames(int fd){
     memmove(mess_games+len, stars, strlen(stars)); len += strlen(stars);
     int r = send(fd, mess_games, len, 0);
     if(r==-1){
+        pthread_mutex_unlock(&verrou_main);
         perror("send");
         return -1;
     }
@@ -24,11 +25,11 @@ int sendGames(int fd){
     char * ogame = "OGAME \0";
     for(int i=0;i<NB_GAMES;i++){
         if(game_list[i]->state_game == 1){
-            pthread_mutex_lock(&game_list[i]->verrou_server);
+            pthread_mutex_lock(&(game_list[i]->verrou_server));
             char * message = malloc(strlen(ogame) + sizeof(uint8_t)*2 + 1 + sizeof(stars));
             uint8_t idgame = game_list[i]->id_game;
             uint8_t nbJoueurs = game_list[i]->nb_players;
-            pthread_mutex_unlock(&game_list[i]->verrou_server);
+            pthread_mutex_unlock(&(game_list[i]->verrou_server));
             len = 0;
             memmove(message+len, ogame, strlen(ogame)); len += strlen(ogame);
             memmove(message+len, &idgame, sizeof(idgame)); len += sizeof(idgame);
@@ -38,6 +39,7 @@ int sendGames(int fd){
 
             r = send(fd, message, len, 0);
             if(r==-1){
+                pthread_mutex_unlock(&verrou_main);
                 perror("send");
                 return -1;
             }
@@ -71,6 +73,7 @@ int sendGList(int fd, game * g){
     memmove(mess_list+len, stars, strlen(stars)); len += strlen(stars);
     int r = send(fd, mess_list, len, 0); free(mess_list);
     if(r==-1){
+        pthread_mutex_unlock(&g->verrou_server);
         free(mess_list);
         return -1;
     }
@@ -131,10 +134,100 @@ int sendGList(int fd, game * g){
         r = send(fd, message, len, 0);
         free(message);
         if(r==-1){
+            pthread_mutex_unlock(&g->verrou_server);
             return -1;
         }
     }
 
     pthread_mutex_unlock(&g->verrou_server);
+    return 0;
+}
+
+int sendSize(int fd, game * g){
+    char * size = "SIZE! \0";
+    char * stars = "***\0";
+    pthread_mutex_lock(&(g->verrou_server));
+
+    uint8_t m = g->id_game;
+    uint16_t h = g->laby->lenX;
+    uint16_t w = g->laby->lenY;
+
+    pthread_mutex_unlock(&(g->verrou_server));
+
+    h = htole16(h);
+    w = htole16(w);
+
+    int len = strlen(size) + strlen(stars) + sizeof(uint16_t)*2 + sizeof(uint8_t) + 2;
+    char * message = malloc(len);
+    memset(message, 0, len);
+    len = 0;
+    memmove(message+len, size, strlen(size)); len += strlen(size);
+    memmove(message+len, &m, sizeof(uint8_t)); len += sizeof(uint8_t);
+    memmove(message+len, " ", sizeof(uint8_t)); len += 1;
+    memmove(message+len, &h, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(message+len, " ", sizeof(uint8_t)); len += 1;
+    memmove(message+len, &w, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(message+len, stars, strlen(stars)); len += strlen(stars);
+
+    int r = send(fd, message, len, 0);
+    free(message);
+    if(r==-1){
+        return -1;
+    }
+    return 0;
+
+}
+
+int sendList(int fd, game * g){
+    char * list = "LIST! \0";
+    char * stars = "***\0";
+    char * playr = "PLAYR \0";
+    pthread_mutex_lock(&(g->verrou_server));
+
+    uint8_t m = g->id_game;
+    uint8_t s = g->nb_players;
+
+    int len = strlen(list) + strlen(stars) + sizeof(uint8_t)*2 + 1;
+
+    char * message = malloc(len);
+    memset(message, 0, len);
+    len = 0;
+    memmove(message+len, list, strlen(list)); len += strlen(list);
+    memmove(message+len, &m, sizeof(uint8_t)); len += sizeof(uint8_t);
+    memmove(message+len, " ", sizeof(uint8_t)); len += 1;
+    memmove(message+len, &s, sizeof(uint8_t)); len += sizeof(uint8_t);
+    memmove(message+len, stars, strlen(stars)); len += strlen(stars);
+
+
+    int r = send(fd, message, len, 0);
+    free(message);
+    if(r==-1){
+        pthread_mutex_unlock(&(g->verrou_server));
+        return -1;
+    }
+
+    len = strlen(playr) + strlen(stars) + 9;
+
+    for(int i=0;i<s;i++){
+        char * message_player = malloc(len);
+        int len_player = 0;
+        player * p = get_n_player(g->list.first ,i);
+
+        pthread_mutex_lock(&(p->verrou_player));
+        memmove(message_player+len_player, playr, strlen(playr)); len_player += strlen(playr);
+        memmove(message_player+len_player, p->name, 8); len_player += 8;
+        memmove(message_player+len_player, stars, strlen(stars)); len_player += strlen(stars);
+        pthread_mutex_unlock(&(p->verrou_player));
+
+        int r = send(fd, message_player, len_player, 0);
+        printf("%s\n", message_player);
+        free(message_player);
+        if(r==-1){
+            pthread_mutex_unlock(&(g->verrou_server));
+            return -1;
+        }
+    }
+
+    pthread_mutex_unlock(&(g->verrou_server));
     return 0;
 }

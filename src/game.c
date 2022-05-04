@@ -10,6 +10,23 @@ void init_game_list(){
         game_list[i]->nb_players = 0;
         game_list[i]->verrou_server = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
     }
+
+    //TODO: DELETE, juste pour le teste d'avoir une partie
+    /*game_list[21]->state_game = 1;
+    game_list[21]->nb_players = 1;
+    game_list[21]->laby = malloc(sizeof(maze));
+    game_list[21]->laby->lenX = 10;
+    game_list[21]->laby->lenY = 20;
+    printf("ici\n");
+    player * p = malloc(sizeof(player));
+    memmove(p->name,"12345678",8);
+    p->verrou_player = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    player_node * pn = malloc(sizeof(player_node));
+    pn->p = p;
+    player_array pa = {
+            .first = pn
+    };
+    game_list[21]->list = pa;*/
 }
 
 int getNbNotStarted(){
