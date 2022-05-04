@@ -249,7 +249,6 @@ public class Client {
             byte[] bytePartie = askNumGame();
 
             byte[] req = "SIZE? ".getBytes();
-            req = concatByteArrays(req, " ".getBytes());
             req = concatByteArrays(req, bytePartie);
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
@@ -293,7 +292,6 @@ public class Client {
             byte[] bytePartie = askNumGame();
 
             byte[] req = "LIST? ".getBytes();
-            req = concatByteArrays(req, " ".getBytes());
             req = concatByteArrays(req, bytePartie);
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
