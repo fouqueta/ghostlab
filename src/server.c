@@ -81,24 +81,79 @@ void* listen_player(void* args){
             printf("Error");
             break;
         }
-        printf("%s\n", message);
-        printf("%d\n", buffer_size);
 
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
-        if(player_infos == NULL || player_infos->g->is_start == 0){
-            //Cas si le joueurs n'est dans aucune partie ou la partie n'as pas commencée
+        if(player_infos == NULL || player_infos->g->state_game == 1){
+            //Cas si les joueurs n'est dans aucune partie ou la partie n'as pas commencée
             if(strncmp(action, "GAME?", 5) == 0 && buffer_size == 8){
                 if(sendGames(sock) == -1) {
                     break;
                 }
             }else if(strncmp(action, "NEWPL", 5) == 0 && player_infos == NULL){
-                //TODO: Creation d'une game
+                char pseudo[8];
+                memcpy(pseudo, message+6, 8);
+                char port[4];
+                memcpy(port, message+15, 4);
+
+                int8_t m = get_empty_game();
+                player_infos = init_player(pseudo, port);
+                if(m<0){
+                    if(sendRegno(sock) == -1){
+                        break;
+                    }
+                }else{
+                    init_a_game(m);
+                    if(add_player_game(player_infos, m) == -1){
+                        if(sendRegno(sock) == -1){
+                            break;
+                        }
+                    }
+                    if(sendRegok(sock, m) == -1){
+                        break;
+                    }
+                    //TODO: Lancer un thread qui va s'occuper de la partie
+                }
             }else if(strncmp(action, "REGIS", 5) == 0 && player_infos == NULL){
-                //TODO: Rejoindre une game
+                //REGIS 12345678 1234 m***
+                char pseudo[8];
+                memcpy(pseudo, message+6, 8);
+                char port[4];
+                memcpy(port, message+15, 4);
+                int8_t m = message[20];
+
+                if( m<0 || m>NB_GAMES
+                        || game_list[m]->state_game != 1
+                        || name_taken(game_list[m]->list.first, pseudo) == 1){
+                    if(sendRegno(sock) == -1){
+                        break;
+                    }
+                }else{
+                    player_infos = init_player(pseudo, port);
+                    if(add_player_game(player_infos, m) == -1){
+                        if(sendRegno(sock) == -1){
+                            break;
+                        }
+                    }
+                    if(sendRegok(sock, m) == -1){
+                        break;
+                    }
+                }
+
             }else if(strncmp(action, "UNREG", 5) == 0){
-                //TODO: Desincrire
+                if(player_infos == NULL){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else{
+                    int8_t m = player_infos->g->id_game;
+                    remove_player_game(player_infos, m);
+                    player_infos = NULL;
+                    if(sendUnrok(sock, m) == -1){
+                        break;
+                    }
+                }
             }else if(strncmp(action, "SIZE?", 5) == 0){
                 int8_t m = message[6];
                 if(m<0 || m>NB_GAMES || game_list[m]->state_game == 0){
@@ -124,7 +179,7 @@ void* listen_player(void* args){
                     break;
                 }
             }
-        }else if(player_infos->g->is_start == 1){
+        }else if(player_infos->g->state_game == 2){
             //Cas si la partie a commencée
             if(strncmp(action, "UPMOV", 5) == 0){
                 //TODO: Se deplace vers le haut
@@ -156,7 +211,7 @@ void* listen_player(void* args){
         free(action);
     }
     /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
-    Si on arrive c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/
+    Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/
     free(message);
     close(sock);
 

@@ -8,11 +8,12 @@ typedef struct game{
     uint8_t nb_players;
     player_array list;
     uint8_t id_game;
-    int is_start;
     //0 -> Libre
     //1 -> Not start
     //2 -> En cours
+    //3 -> terminée mais il y a encore des joueurs ?
     int state_game;
+    int nb_ready;
     pthread_mutex_t verrou_server;
     maze * laby;
     //TODO: Fantômes (les places dans le maze ?)
@@ -20,4 +21,12 @@ typedef struct game{
 
 void init_game_list();
 
-int  getNbNotStarted();
+int getNbNotStarted();
+
+int8_t get_empty_game();
+
+void init_a_game(int m);
+
+int add_player_game(player * player_infos, int m);
+
+void remove_player_game(player * player_infos, int m);

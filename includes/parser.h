@@ -10,3 +10,9 @@ int sendGList(int fd, game * g);
 int sendSize(int fd, game * g);
 
 int sendList(int fd, game * g);
+
+int sendRegno(int fd);
+
+int sendRegok(int fd, int8_t m);
+
+int sendUnrok(int fd, int8_t m);

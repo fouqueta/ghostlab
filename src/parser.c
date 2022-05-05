@@ -1,4 +1,5 @@
 #include "../includes/server.h"
+#include <stdint.h>
 
 int sendGames(int fd){
     pthread_mutex_lock(&verrou_main);
@@ -220,7 +221,6 @@ int sendList(int fd, game * g){
         pthread_mutex_unlock(&(p->verrou_player));
 
         int r = send(fd, message_player, len_player, 0);
-        printf("%s\n", message_player);
         free(message_player);
         if(r==-1){
             pthread_mutex_unlock(&(g->verrou_server));
@@ -229,5 +229,43 @@ int sendList(int fd, game * g){
     }
 
     pthread_mutex_unlock(&(g->verrou_server));
+    return 0;
+}
+
+int sendRegno(int fd){
+    char * message = "REGNO***\0";
+    if(send(fd, message, strlen(message), 0) == -1){
+        return -1;
+    }
+    return 0;
+}
+
+int sendRegok(int fd, int8_t m){
+    char * regok = "REGOK \0";
+    char * stars = "***\0";
+    char * message = malloc(strlen(regok) + 3 + sizeof(int8_t));
+    int len = 0;
+    memmove(message+len, regok, strlen(regok)); len += strlen(regok);
+    memmove(message+len, &m, sizeof(int8_t)); len += sizeof(int8_t);
+    memmove(message+len, stars, strlen(stars)); len += strlen(stars);
+
+    if(send(fd, message, len, 0) == -1){
+        return -1;
+    }
+    return 0;
+}
+
+int sendUnrok(int fd, int8_t m){
+    char * unrok = "UNROK \0";
+    char * stars = "***\0";
+    char * message = malloc(strlen(unrok) + 3 + sizeof(int8_t));
+    int len = 0;
+    memmove(message+len, unrok, strlen(unrok)); len += strlen(unrok);
+    memmove(message+len, &m, sizeof(int8_t)); len += sizeof(int8_t);
+    memmove(message+len, stars, strlen(stars)); len += strlen(stars);
+
+    if(send(fd, message, len, 0) == -1){
+        return -1;
+    }
     return 0;
 }

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <endian.h>
+#include <stdint.h>
 
 #include "game.h"
 #include "parser.h"
