@@ -106,7 +106,7 @@ void* listen_player(void* args){
         action[5] = '\0';
         if(player_infos == NULL || player_infos->g->state_game == 1){
             //Cas si les joueurs n'est dans aucune partie ou la partie n'as pas commencée
-            if(strncmp(action, "GAME?", 5) == 0 && buffer_size == 8){
+            if(strncmp(action, "GAME?", 5) == 0 && len_message == 8){
                 if(sendGames(sock) == -1) {
                     break;
                 }
