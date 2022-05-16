@@ -94,7 +94,7 @@ void* listen_player(void* args){
             if(buffer_size == -1){
                 perror("Recv");
                 break;
-            }else if(buffer_size<0){
+            }else if(buffer_size==0){
                 printf("Error");
                 break;
             }
