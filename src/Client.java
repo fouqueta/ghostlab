@@ -492,19 +492,18 @@ public class Client {
 
 
     public void doInGameActions(InputStream is, OutputStream os) {
-        Thread threadTCP = new Thread(new InGameTCP(is, os));
-        Thread threadUDP = new Thread(new InGameUDP(this.portUDP));
-        Thread threadMulticast = new Thread(new InGameMulticast(this.ipMult, this.portMult));
-
-        threadTCP.start();
-        threadUDP.start();
-        threadMulticast.start();
         try {
+            Thread threadTCP = new Thread(new InGameTCP(is, os));
+            Thread threadUDP = new Thread(new InGameUDP(this.portUDP));
+            Thread threadMulticast = new Thread(new InGameMulticast(this.ipMult, this.portMult));
+
+            threadTCP.start();
+            threadUDP.start();
+            threadMulticast.start();
             threadMulticast.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        
     }
 
 

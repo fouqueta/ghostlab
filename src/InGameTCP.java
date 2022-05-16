@@ -1,7 +1,4 @@
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.print.attribute.standard.OutputDeviceAssigned;
+import java.io.*;
 
 public class InGameTCP implements Runnable {
     private InputStream is;
@@ -14,7 +11,11 @@ public class InGameTCP implements Runnable {
 
     @Override
     public void run() {
-        
+        try {
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
 }

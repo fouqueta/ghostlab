@@ -58,10 +58,9 @@ public class InGameMulticast implements Runnable {
                         inGame = false;
                         break;
                     default:
-                        System.out.println("Erreur : message incorrect recu");
+                        System.out.println("Erreur : message recu incorrect");
                         break;
                 }
-
             }
             mso.leaveGroup(InetAddress.getByName(ipMulti));
             mso.close();
