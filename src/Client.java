@@ -5,6 +5,10 @@ import java.util.Scanner;
 public class Client {
     static final int MAX_BUFFER = 256;
     static final String MESS_ERROR = "Erreur : veuillez recommencer";
+    private int portTCP;
+    private int portUDP;
+    private int portMult;
+    private String ipMult;
     private boolean start = false;
     private boolean inscrit = false;
     private Scanner scanner = new Scanner(System.in);
@@ -66,6 +70,7 @@ public class Client {
             System.out.println("numero de port invalide, recommencez");
             numPort = scanner.nextLine();
         }
+        this.portUDP = Integer.parseInt(numPort);
         return numPort.getBytes();
     }
 
@@ -416,6 +421,8 @@ public class Client {
             System.out.println(id + ", vous etes en position (" + posX + "," + posY + ")");
 
             this.start = true;
+            this.ipMult = ipMultiDiff.replace("#", "");
+            this.portMult = Integer.parseInt(portMultiDiff);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -483,6 +490,24 @@ public class Client {
         }
     }
 
+
+    public void doInGameActions(InputStream is, OutputStream os) {
+        Thread threadTCP = new Thread(new InGameTCP(is, os));
+        Thread threadUDP = new Thread(new InGameUDP(this.portUDP));
+        Thread threadMulticast = new Thread(new InGameMulticast(this.ipMult, this.portMult));
+
+        threadTCP.start();
+        threadUDP.start();
+        threadMulticast.start();
+        try {
+            threadMulticast.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+
     public void close(Socket fdSock, InputStream is, OutputStream os, Scanner scanner) throws IOException {
         scanner.close();
         is.close();
@@ -496,11 +521,12 @@ public class Client {
             System.out.println("Missing port number !");
             System.exit(0);
         }
-        int portTCP = Integer.parseInt(args[0]);
+        
         Client client = new Client();
+        client.portTCP = Integer.parseInt(args[0]);
 
         try{
-            Socket fdSock = new Socket("127.0.0.1", portTCP);
+            Socket fdSock = new Socket("127.0.0.1", client.portTCP);
             InputStream is = fdSock.getInputStream();
             OutputStream os = fdSock.getOutputStream();
             
@@ -516,6 +542,9 @@ public class Client {
 
             //On gere les actions possibles avant une partie
             client.doPreGameActions(is, os);
+
+            //On gere les actions possibles pendant une partie
+            client.doInGameActions(is, os);
             
             client.scanner.close();
             is.close();
