@@ -269,3 +269,8 @@ int sendUnrok(int fd, int8_t m){
     }
     return 0;
 }
+
+int sendStart(int fd, player * p){
+    //TODO: Envoyer WELCO + POSIT
+    return 0;
+}

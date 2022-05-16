@@ -125,3 +125,24 @@ void generatorMaze(char** maze, char** visited, int sX, int sY, int lenX, int le
 
     }
 }
+
+void initGhosts(maze * laby, int nb_ghosts){
+    srand(time(NULL));
+    laby->ghosts = malloc(sizeof(int *)*nb_ghosts);
+    for(int i=0;i<nb_ghosts;i++){
+        int x = 0;
+        int y = 0;
+        while(1){
+            x = rand() % laby->lenX;
+            y = rand() % laby->lenY;
+
+            if(laby->maze[x][y] == CHARPATH)
+                break;
+        }
+        laby->ghosts[i] = malloc(2* sizeof(int));
+        laby->ghosts[i][0] = x;
+        laby->ghosts[i][1] = y;
+
+    }
+
+}

@@ -16,3 +16,5 @@ int sendRegno(int fd);
 int sendRegok(int fd, int8_t m);
 
 int sendUnrok(int fd, int8_t m);
+
+int sendStart(int fd, player * p);

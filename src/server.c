@@ -96,10 +96,12 @@ void* listen_player(void* args){
                 break;
             }else if(buffer_size==0){
                 printf("Error");
+                len_message = -1;
                 break;
             }
         }
-
+        if(len_message == -1)
+            break;
 
         char * action = malloc(6);
         memcpy(action, message, 5);
@@ -132,7 +134,7 @@ void* listen_player(void* args){
                     if(sendRegok(sock, m) == -1){
                         break;
                     }
-                    //TODO: Lancer un thread qui va s'occuper de la partie
+
                 }
             }else if(strncmp(action, "REGIS", 5) == 0 && player_infos == NULL){
                 //REGIS 12345678 1234 m***
@@ -193,6 +195,22 @@ void* listen_player(void* args){
                 }
             }else if(strncmp(action, "START", 5) == 0){
                 //TODO: Joueur prêt
+                //TODO: Lancer un thread qui va s'occuper de la partie
+                pthread_mutex_lock(&(player_infos->g->verrou_server));
+                player_infos->g->nb_ready++;
+                if(player_infos->g->nb_ready == player_infos->g->nb_players){
+                    pthread_cond_signal(&(player_infos->g->cond));
+                    pthread_t th;
+                    pthread_create(&th, NULL, gameFunc, player_infos->g);
+                }
+                while(player_infos->g->nb_ready != player_infos->g->nb_players && player_infos->g->nb_players > 1){
+                    pthread_cond_wait(&(player_infos->g->cond), &(player_infos->g->verrou_server));
+                }
+                pthread_mutex_unlock(&(player_infos->g->verrou_server));
+
+                if(sendStart(sock, player_infos)==-1){
+                    break;
+                }
             }else{
                 if(sendDunno(sock) == -1){
                     break;

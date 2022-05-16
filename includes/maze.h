@@ -1,5 +1,5 @@
 //Char - Chemin
-#define CHARPATH ' '
+#define CHARPATH 'O'
 
 //Char - Murs
 #define CHARWALL 'X'
@@ -9,6 +9,7 @@ typedef struct maze{
     char ** maze;
     int lenX;
     int lenY;
+    int ** ghosts;
     //TODO: Liste avec position ds joueurs ici ?
 } maze;
 
@@ -20,3 +21,5 @@ void generatorMaze(char** maze, char** visited, int sX, int sY, int lenX, int le
 
 //Affiche un labyrinthe
 void printMaze(char ** maze, int lenX, int lenY);
+
+void initGhosts(maze * laby, int nb_ghosts);

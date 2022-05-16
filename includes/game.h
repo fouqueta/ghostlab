@@ -14,7 +14,9 @@ typedef struct game{
     //3 -> terminée mais il y a encore des joueurs ?
     int state_game;
     int nb_ready;
+    int nb_ghosts;
     pthread_mutex_t verrou_server;
+    pthread_cond_t cond;
     maze * laby;
     //TODO: Fantômes (les places dans le maze ?)
 } game;
@@ -30,3 +32,5 @@ void init_a_game(int m);
 int add_player_game(player * player_infos, int m);
 
 void remove_player_game(player * player_infos, int m);
+
+void* gameFunc(void* args);
