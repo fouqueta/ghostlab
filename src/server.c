@@ -58,6 +58,15 @@ int main(int argc, char ** argv) {
     return 0;
 }
 
+int containsStars(char * buff, int len){
+    for(int i=0;i<len-2;i++){
+        if(buff[i] == buff[i+1] && buff[i+1]==buff[i+2] && buff[i]== '*'){
+            return i+3;
+        }
+    }
+    return -1;
+}
+
 void* listen_player(void* args){
     int sock = *(int *) args;
 
@@ -70,17 +79,27 @@ void* listen_player(void* args){
     }
 
     char * message = malloc(1024);
+    memset(message,0,1024);
+    int len_message = 0;
+    int buffer_size = 0;
     while(1){
-        memset(message, 0, 1024);
-        //TODO: recv while not recv "***"
-        int buffer_size = recv(sock, message, 1024, MSG_NOSIGNAL);
-        if(buffer_size == -1){
-            perror("Recv");
-            break;
-        }else if(buffer_size<0){
-            printf("Error");
-            break;
+        while(1){
+            int tmp = containsStars(message, buffer_size);
+            if(tmp != -1){
+                len_message = tmp;
+                break;
+            }
+
+            buffer_size += recv(sock, message+buffer_size, 1024-buffer_size, MSG_NOSIGNAL);
+            if(buffer_size == -1){
+                perror("Recv");
+                break;
+            }else if(buffer_size<0){
+                printf("Error");
+                break;
+            }
         }
+
 
         char * action = malloc(6);
         memcpy(action, message, 5);
@@ -209,6 +228,14 @@ void* listen_player(void* args){
         }
 
         free(action);
+
+        buffer_size = buffer_size-len_message;
+        char * buff_tmp = malloc(buffer_size);
+        memmove(buff_tmp, message+len_message, buffer_size);
+        memset(message, 0, 1024);
+        memmove(message, buff_tmp, buffer_size);
+        free(buff_tmp);
+
     }
     /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
     Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/
