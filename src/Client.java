@@ -379,7 +379,7 @@ public class Client {
             writeReq(os, req);
 
             //Reception des reponses [WELCO␣m␣h␣w␣f␣ip␣port***] et [POSIT␣id␣x␣y***]
-            byte[] rep = new byte[MAX_BUFFER];
+            byte[] rep = new byte[39];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
@@ -404,19 +404,25 @@ public class Client {
                 + portMultiDiff + (new String(rep, 36, 3)));
             System.out.println("Bienvenue !\nLe labyrinthe a pour hauteur " + height
                 + ", pour largeur " + width + " et il y a " + nbGhosts + " a capturer !\nBONNE CHANCE\n");
-            
+
+            byte[] rep2 = new byte[MAX_BUFFER];
+            int bytesRead2 = is.read(rep2);
+            if (bytesRead2 < 1) {
+                System.out.println(MESS_ERROR);
+                return;
+            }
             //On s'occupe de [POSIT␣id␣x␣y***]
-            action = new String(rep, 39, 5);
+            action = new String(rep2, 0, 5); //39
             System.out.print(action);
             if (!action.equals("POSIT")) {
                 System.out.println(MESS_ERROR);
                 return;
             }
-            String id = new String(rep, 45, 8);
-            String posX = new String(rep, 54, 3);
-            String posY = new String(rep, 58, 3);
-            System.out.println((new String(rep, 44, 1)) + id + (new String(rep, 53, 1)) + posX
-                + (new String(rep, 57, 1)) + posY + (new String(rep, 61, 3)));
+            String id = new String(rep2, 6, 8); //45
+            String posX = new String(rep2, 15, 3); //54
+            String posY = new String(rep2, 19, 3); //58
+            System.out.println((new String(rep2, 5, 1)) + id + (new String(rep2, 14, 1)) + posX
+                + (new String(rep2, 18, 1)) + posY + (new String(rep2, 22, 3)));
             System.out.println(id + ", vous etes en position (" + posX + "," + posY + ")");
 
             this.start = true;
