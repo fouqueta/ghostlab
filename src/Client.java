@@ -5,11 +5,14 @@ import java.util.Scanner;
 public class Client {
     static final int MAX_BUFFER = 256;
     static final String MESS_ERROR = "Erreur : veuillez recommencer";
+    private int portTCP;
+    private int portUDP;
+    private int portMult;
+    private String ipMult;
+    private boolean inGame = false;
     private boolean start = false;
     private boolean inscrit = false;
     private Scanner scanner = new Scanner(System.in);
-
-
 
     //Convertit 2 bytes du buffer a partir de l'offset en un short et en inversant l'ordre des bytes
     public static short byteArrayToShortSwap(byte[] buffer, int offset) {
@@ -66,6 +69,7 @@ public class Client {
             System.out.println("numero de port invalide, recommencez");
             numPort = scanner.nextLine();
         }
+        this.portUDP = Integer.parseInt(numPort);
         return numPort.getBytes();
     }
 
@@ -416,6 +420,9 @@ public class Client {
             System.out.println(id + ", vous etes en position (" + posX + "," + posY + ")");
 
             this.start = true;
+            this.inGame = true;
+            this.ipMult = ipMultiDiff.replace("#", "");
+            this.portMult = Integer.parseInt(portMultiDiff);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -438,7 +445,7 @@ public class Client {
             }
 
             String numAction = scanner.nextLine();
-            System.out.println("Vous avez saisi le nombre : " + numAction);
+            System.out.println("Vous avez saisi l'action : " + numAction);
             switch (numAction) {
                 case "1":
                     preGameActionGAME(is, os);
@@ -483,6 +490,29 @@ public class Client {
         }
     }
 
+
+    public void doInGameActions(Client client, InputStream is, OutputStream os) {
+        try {
+            Thread threadTCP = new Thread(new InGameTCP(client, is, os));
+            Thread threadUDP = new Thread(new InGameUDP(client));
+            Thread threadMulticast = new Thread(new InGameMulticast(client));
+
+            threadTCP.start();
+            threadUDP.start();
+            threadMulticast.start();
+            threadMulticast.join();
+
+            //TODO
+            //actions postGame
+            //inGame = false; 
+            //start = false;
+            //inscrit = false;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public void close(Socket fdSock, InputStream is, OutputStream os, Scanner scanner) throws IOException {
         scanner.close();
         is.close();
@@ -496,11 +526,12 @@ public class Client {
             System.out.println("Missing port number !");
             System.exit(0);
         }
-        int portTCP = Integer.parseInt(args[0]);
+        
         Client client = new Client();
+        client.portTCP = Integer.parseInt(args[0]);
 
         try{
-            Socket fdSock = new Socket("127.0.0.1", portTCP);
+            Socket fdSock = new Socket("127.0.0.1", client.portTCP);
             InputStream is = fdSock.getInputStream();
             OutputStream os = fdSock.getOutputStream();
             
@@ -516,6 +547,9 @@ public class Client {
 
             //On gere les actions possibles avant une partie
             client.doPreGameActions(is, os);
+
+            //On gere les actions possibles pendant une partie
+            client.doInGameActions(client, is, os);
             
             client.scanner.close();
             is.close();
@@ -526,5 +560,26 @@ public class Client {
             System.out.println(e);
             e.printStackTrace();
         }
+    }
+
+
+    public boolean isInGame() {
+        return this.inGame;
+    }
+
+    public void setInGame(boolean inG) {
+        this.inGame = inG;
+    }
+
+    public int getPortUDP() {
+        return this.portUDP;
+    }
+
+    public int getPortMult() {
+        return this.portMult;
+    }
+
+    public String getIPMult() {
+        return this.ipMult;
     }
 }
