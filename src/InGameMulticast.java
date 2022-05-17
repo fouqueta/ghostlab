@@ -2,20 +2,21 @@ import java.net.*;
 
 public class InGameMulticast implements Runnable {
     static final int MAX_BUFFER = 256;
-    private boolean inGame = true;
-    private String ipMulti;
-    private int portMulti;
+    private Client client;
+    private boolean inGame;
 
-    public InGameMulticast(String ip, int port) {
-        this.ipMulti = ip;
-        this.portMulti = port;
+    public InGameMulticast(Client c) {
+        this.client = c;
+        synchronized(client) { 
+            this.inGame = client.isInGame(); 
+        }
     }
 
     @Override
     public void run() {
         try {
-            MulticastSocket mso = new MulticastSocket(portMulti);
-            mso.joinGroup(InetAddress.getByName(ipMulti));
+            MulticastSocket mso = new MulticastSocket(client.getPortMult());
+            mso.joinGroup(InetAddress.getByName(client.getIPMult()));
         
             while(inGame) {
                 byte[] rep = new byte[MAX_BUFFER];
@@ -35,9 +36,9 @@ public class InGameMulticast implements Runnable {
                         String score = new String(dpacket.getData(), 15, 4);
                         posX = new String(dpacket.getData(), 20, 3);
                         posY = new String(dpacket.getData(), 24, 3);
-                        score = score.replaceFirst("^0+(?!$)", ""); //Pour enlever les 0 de debut
                         System.out.println(id + (new String(dpacket.getData(), 14, 1)) + score + (new String(dpacket.getData(), 19, 1)) 
                             + posX + (new String(rep, 23, 1)) + posY + (new String(rep, 28, 3)));
+                        score = score.replaceFirst("^0+(?!$)", ""); //Pour enlever les 0 de debut
                         System.out.println("-> " + id + " a attrape le fantome qui etait en position ("+ posX + "," + posY + ") !");
                         System.out.println("-> " + id + " a maintenant " + score + " points.");
                         break;
@@ -51,18 +52,23 @@ public class InGameMulticast implements Runnable {
                     case "ENDGA ": //[ENDGA␣id␣p+++]
                         id = new String(dpacket.getData(), 6, 8);
                         score = new String(dpacket.getData(), 15, 4);
-                        score = score.replaceFirst("^0+(?!$)", "");
                         System.out.println(id + (new String(dpacket.getData(), 14, 1)) + score + (new String(dpacket.getData(), 19, 1)));
+                        score = score.replaceFirst("^0+(?!$)", "");
                         System.out.println("-> Il n'y a plus de fantomes !");
                         System.out.println("-> " + id + " a gagne la partie avec un score de " + score + " points.");
-                        inGame = false;
+                        synchronized(client) { 
+                            client.setInGame(false); 
+                        }
                         break;
                     default:
                         System.out.println("Erreur : message recu incorrect");
                         break;
                 }
+                synchronized(client) { 
+                    inGame = client.isInGame(); 
+                }
             }
-            mso.leaveGroup(InetAddress.getByName(ipMulti));
+            mso.leaveGroup(InetAddress.getByName(client.getIPMult()));
             mso.close();
         } catch (Exception e) {
             e.printStackTrace();

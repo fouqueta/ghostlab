@@ -9,11 +9,10 @@ public class Client {
     private int portUDP;
     private int portMult;
     private String ipMult;
+    private boolean inGame = false;
     private boolean start = false;
     private boolean inscrit = false;
     private Scanner scanner = new Scanner(System.in);
-
-
 
     //Convertit 2 bytes du buffer a partir de l'offset en un short et en inversant l'ordre des bytes
     public static short byteArrayToShortSwap(byte[] buffer, int offset) {
@@ -421,6 +420,7 @@ public class Client {
             System.out.println(id + ", vous etes en position (" + posX + "," + posY + ")");
 
             this.start = true;
+            this.inGame = true;
             this.ipMult = ipMultiDiff.replace("#", "");
             this.portMult = Integer.parseInt(portMultiDiff);
         } catch (IOException e) {
@@ -445,7 +445,7 @@ public class Client {
             }
 
             String numAction = scanner.nextLine();
-            System.out.println("Vous avez saisi le nombre : " + numAction);
+            System.out.println("Vous avez saisi l'action : " + numAction);
             switch (numAction) {
                 case "1":
                     preGameActionGAME(is, os);
@@ -491,16 +491,22 @@ public class Client {
     }
 
 
-    public void doInGameActions(InputStream is, OutputStream os) {
+    public void doInGameActions(Client client, InputStream is, OutputStream os) {
         try {
-            Thread threadTCP = new Thread(new InGameTCP(is, os));
-            Thread threadUDP = new Thread(new InGameUDP(this.portUDP));
-            Thread threadMulticast = new Thread(new InGameMulticast(this.ipMult, this.portMult));
+            Thread threadTCP = new Thread(new InGameTCP(client, is, os));
+            Thread threadUDP = new Thread(new InGameUDP(client));
+            Thread threadMulticast = new Thread(new InGameMulticast(client));
 
             threadTCP.start();
             threadUDP.start();
             threadMulticast.start();
             threadMulticast.join();
+
+            //TODO
+            //actions postGame
+            //inGame = false; 
+            //start = false;
+            //inscrit = false;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -543,7 +549,7 @@ public class Client {
             client.doPreGameActions(is, os);
 
             //On gere les actions possibles pendant une partie
-            client.doInGameActions(is, os);
+            client.doInGameActions(client, is, os);
             
             client.scanner.close();
             is.close();
@@ -554,5 +560,26 @@ public class Client {
             System.out.println(e);
             e.printStackTrace();
         }
+    }
+
+
+    public boolean isInGame() {
+        return this.inGame;
+    }
+
+    public void setInGame(boolean inG) {
+        this.inGame = inG;
+    }
+
+    public int getPortUDP() {
+        return this.portUDP;
+    }
+
+    public int getPortMult() {
+        return this.portMult;
+    }
+
+    public String getIPMult() {
+        return this.ipMult;
     }
 }

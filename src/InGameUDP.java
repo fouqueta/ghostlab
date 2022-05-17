@@ -2,18 +2,22 @@ import java.net.*;
 
 public class InGameUDP implements Runnable {
     static final int MAX_BUFFER = 256;
-    private int portUDP;
+    private Client client;
+    private boolean inGame;
 
-    public InGameUDP(int port) {
-        this.portUDP = port;
+    public InGameUDP(Client c) {
+        this.client = c;
+        synchronized(client) { 
+            this.inGame = client.isInGame(); 
+        }
     }
 
     @Override
     public void run() {
         try {
-            DatagramSocket dso = new DatagramSocket(this.portUDP);
+            DatagramSocket dso = new DatagramSocket(client.getPortUDP());
             
-            while(true) {
+            while(inGame) {
                 byte[] rep = new byte[MAX_BUFFER];
                 DatagramPacket dpacket = new DatagramPacket(rep, rep.length);
                 dso.receive(dpacket);
@@ -28,6 +32,9 @@ public class InGameUDP implements Runnable {
                 }
                 else {
                     System.out.println("Erreur : message recu incorrect");
+                }
+                synchronized(client) { 
+                    this.inGame = client.isInGame(); 
                 }
             }
             // dso.close();
