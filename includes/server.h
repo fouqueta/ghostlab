@@ -8,13 +8,14 @@
 #include <time.h>
 #include <string.h>
 #include <pthread.h>
+#include <endian.h>
+#include <stdint.h>
 
 #include "game.h"
 #include "parser.h"
 
 //TODO: Changer la façon dont les parties sont stockées ?
-extern games games_started;
-extern games games_not_started;
+extern game ** game_list;
 
 //Verrou principal
 extern pthread_mutex_t verrou_main;

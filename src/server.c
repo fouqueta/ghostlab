@@ -1,11 +1,6 @@
 #include "../includes/server.h"
 
-games games_started = {
-        .len = 0
-};
-games games_not_started = {
-        .len = 0
-};
+game ** game_list;
 
 pthread_mutex_t verrou_main = PTHREAD_MUTEX_INITIALIZER;
 
@@ -42,21 +37,10 @@ int main(int argc, char ** argv) {
         exit(EXIT_FAILURE);
     }
 
-    //Test pour le message message GAMES
-    //"Cree une partie" entre guillemets
-    //TODO: Delete
-    /*games_not_started.game_list = malloc(sizeof(game));
-    games_not_started.game_list[0] = malloc(sizeof(game));
-    games_not_started.game_list[0]->nb_players = 1;
-    games_not_started.game_list[0]->id_game = 1;
-    games_not_started.game_list[0]->laby = malloc(sizeof(maze));
-    games_not_started.game_list[0]->laby->lenY = 10;
-    games_not_started.game_list[0]->laby->lenX = 10;
-    getAMaze(games_not_started.game_list[0]->laby);
-    games_not_started.len = 1;*/
+    init_game_list(game_list);
 
     //Boucle principale du serveur
-    while(1){
+    while(1) {
         int * sock_player = malloc(sizeof(int));
 
         struct sockaddr_in c;
@@ -74,6 +58,15 @@ int main(int argc, char ** argv) {
     return 0;
 }
 
+int containsStars(char * buff, int len){
+    for(int i=0;i<len-2;i++){
+        if(buff[i] == buff[i+1] && buff[i+1]==buff[i+2] && buff[i]== '*'){
+            return i+3;
+        }
+    }
+    return -1;
+}
+
 void* listen_player(void* args){
     int sock = *(int *) args;
 
@@ -86,51 +79,161 @@ void* listen_player(void* args){
     }
 
     char * message = malloc(1024);
+    memset(message,0,1024);
+    int len_message = 0;
+    int buffer_size = 0;
     while(1){
-        memset(message, 0, 1024);
-        //TODO: recv while not recv "***"
-        int buffer_size = recv(sock, message, 1024, MSG_NOSIGNAL);
-        if(buffer_size == -1){
-            perror("Recv");
-            break;
-        }else if(buffer_size<5){
-            printf("Error");
-            break;
+        while(1){
+            int tmp = containsStars(message, buffer_size);
+            if(tmp != -1){
+                len_message = tmp;
+                break;
+            }
+
+            buffer_size += recv(sock, message+buffer_size, 1024-buffer_size, MSG_NOSIGNAL);
+            if(buffer_size == -1){
+                perror("Recv");
+                break;
+            }else if(buffer_size==0){
+                printf("Error");
+                len_message = -1;
+                break;
+            }
         }
+        if(len_message == -1)
+            break;
 
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
-        if(player_infos == NULL || player_infos->g->is_start == 0){
-            //Cas si le joueurs n'est dans aucune partie ou la partie n'as pas commancée
-            if(strncmp(action, "GAME?", 5) == 0 && buffer_size == 8){
+        if(player_infos == NULL || player_infos->g->state_game == 1){
+            //Cas si les joueurs n'est dans aucune partie ou la partie n'as pas commencée
+            if(strncmp(action, "GAME?", 5) == 0 && len_message == 8){
                 if(sendGames(sock) == -1) {
-                    if(player_infos->g->is_start == 0){
-                        //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
-                    }
                     break;
                 }
             }else if(strncmp(action, "NEWPL", 5) == 0 && player_infos == NULL){
-                //TODO: Creation d'une game
+                char pseudo[8];
+                memcpy(pseudo, message+6, 8);
+                char port[4];
+                memcpy(port, message+15, 4);
+
+                int8_t m = get_empty_game();
+                player_infos = init_player(pseudo, port);
+                if(m<0){
+                    if(sendRegno(sock) == -1){
+                        break;
+                    }
+                }else{
+                    init_a_game(m);
+                    if(add_player_game(player_infos, m) == -1){
+                        if(sendRegno(sock) == -1){
+                            break;
+                        }
+                    }
+                    if(sendRegok(sock, m) == -1){
+                        break;
+                    }
+
+                }
             }else if(strncmp(action, "REGIS", 5) == 0 && player_infos == NULL){
-                //TODO: Rejoindre une game
+                //REGIS 12345678 1234 m***
+                char pseudo[8];
+                memcpy(pseudo, message+6, 8);
+                char port[4];
+                memcpy(port, message+15, 4);
+                int8_t m = message[20];
+
+                if( m<0 || m>NB_GAMES
+                        || game_list[m]->state_game != 1
+                        || name_taken(game_list[m]->list.first, pseudo) == 1){
+                    if(sendRegno(sock) == -1){
+                        break;
+                    }
+                }else{
+                    player_infos = init_player(pseudo, port);
+                    if(add_player_game(player_infos, m) == -1){
+                        if(sendRegno(sock) == -1){
+                            break;
+                        }
+                    }
+                    if(sendRegok(sock, m) == -1){
+                        break;
+                    }
+                }
+
             }else if(strncmp(action, "UNREG", 5) == 0){
-                //TODO: Desincrire
+                if(player_infos == NULL){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else{
+                    int8_t m = player_infos->g->id_game;
+                    remove_player_game(player_infos, m);
+                    player_infos = NULL;
+                    if(sendUnrok(sock, m) == -1){
+                        break;
+                    }
+                }
             }else if(strncmp(action, "SIZE?", 5) == 0){
-                //TODO: Taille du labyrinthe
+                int8_t m = message[6];
+                if(m<0 || m>NB_GAMES || game_list[m]->state_game == 0){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else if(sendSize(sock, game_list[m]) == -1){
+                    break;
+                }
             }else if(strncmp(action, "LIST?", 5) == 0){
-                //TODO: Liste des joueurs de la partie
+                int8_t m = message[6];
+                if(m<0 || m>NB_GAMES || game_list[m]->state_game == 0){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else if(sendList(sock, game_list[m]) == -1){
+                    break;
+                }
             }else if(strncmp(action, "START", 5) == 0){
                 //TODO: Joueur prêt
+                //TODO: Lancer un thread qui va s'occuper de la partie
+                pthread_mutex_lock(&(player_infos->g->verrou_for_cond));
+                pthread_mutex_lock(&(player_infos->g->verrou_server));
+                player_infos->g->nb_ready++;
+                if(player_infos->g->nb_ready == player_infos->g->nb_players && player_infos->g->nb_players > 1){
+                    getAMaze(player_infos->g->laby);
+                    player_infos->g->nb_ghosts = 10;
+                    initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
+                    placePlayers(player_infos->g);
+                    set_port(player_infos->g);
+                    player_infos->g->state_game = 2;
+                    pthread_mutex_unlock(&(player_infos->g->verrou_server));
+
+                    pthread_cond_signal(&(player_infos->g->cond));
+                    pthread_t th;
+                    pthread_create(&th, NULL, gameFunc, player_infos->g);
+                }else{
+                    int nb_players = player_infos->g->nb_players;
+                    int nb_ready = player_infos->g->nb_ready;
+                    pthread_mutex_unlock(&(player_infos->g->verrou_server));
+                    while(nb_ready != nb_players || nb_players < 2){
+                        pthread_cond_wait(&(player_infos->g->cond), &(player_infos->g->verrou_for_cond));
+                        pthread_mutex_lock(&(player_infos->g->verrou_server));
+                        nb_players = player_infos->g->nb_players;
+                        nb_ready = player_infos->g->nb_ready;
+                        pthread_mutex_unlock(&(player_infos->g->verrou_server));
+                    }
+                }
+
+                pthread_mutex_unlock(&(player_infos->g->verrou_for_cond));
+                if(sendStart(sock, player_infos)==-1){
+                    break;
+                }
             }else{
                 if(sendDunno(sock) == -1){
-                    if(player_infos->g->is_start == 0){
-                        //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
-                    }
                     break;
                 }
             }
-        }else if(player_infos->g->is_start == 1){
+        }else if(player_infos->g->state_game == 2){
             //Cas si la partie a commencée
             if(strncmp(action, "UPMOV", 5) == 0){
                 //TODO: Se deplace vers le haut
@@ -145,17 +248,14 @@ void* listen_player(void* args){
             }else if(strncmp(action, "GLIS?", 5) == 0){
                 //Liste des joueurs dans la partie du joueur
                 if(sendGList(sock, player_infos->g) == -1){
-                    //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
                     break;
                 }
             }else if(strncmp(action, "MALL?", 5) == 0) {
                 //TODO: Envoye un message à tout les autres joueurs
             }else{
                 if(sendDunno(sock) == -1){
-                    //TODO: Une erreur à eu lieu lors de l'envoie, il faut le desincrire
                     break;
                 }
-
             }
         }else{
             //Es-ce qu'il y a d'autres cas ?
@@ -163,7 +263,18 @@ void* listen_player(void* args){
         }
 
         free(action);
+
+        buffer_size = buffer_size-len_message;
+        char * buff_tmp = malloc(buffer_size);
+        memmove(buff_tmp, message+len_message, buffer_size);
+        memset(message, 0, 1024);
+        memmove(message, buff_tmp, buffer_size);
+        free(buff_tmp);
+
     }
+    /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
+    Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/
+    printf("Sorti\n");
     free(message);
     close(sock);
 

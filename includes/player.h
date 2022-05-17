@@ -5,12 +5,14 @@ struct game;
 //Structure - Joueur
 typedef struct player{
     char name[8];
-    int port;
+    char port[4];
     game * g;
 
     int x;
     int y;
     int score;
+
+    pthread_mutex_t verrou_player;
 
 } player;
 
@@ -44,3 +46,5 @@ player_node * remove_player(player_node * first, player * p);
 
 //Retourne le n-éme joueur de la liste
 player * get_n_player(player_node * first, int n);
+
+player * init_player(char pseudo[8], char port[4]);

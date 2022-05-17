@@ -32,7 +32,7 @@ int len_list(player_node * first){
 }
 
 player_node * add_player(player_node * first, player * p){
-    if(in_list(first,p)){
+    if(first != NULL && in_list(first,p)){
         return first;
     }
     player_node * new = malloc(sizeof(player_node));
@@ -64,4 +64,16 @@ player * get_n_player(player_node * first, int n){
         return first->p;
     }
     return get_n_player(first->next, n-1);
+}
+
+player * init_player(char pseudo[8], char port[4]){
+    player * p = malloc(sizeof(player));
+    p->verrou_player = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    memcpy(p->name, pseudo, 8);
+    memcpy(p->port, port, 4);
+
+    p->score = 0;
+    p->x = 0;
+    p->y = 0;
+    return p;
 }
