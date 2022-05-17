@@ -118,7 +118,7 @@ public class Client {
         if (nbParties == 0) { 
             System.out.println("Aucune partie en attente");
         }
-        //Reception des reponses [OGAME␣m␣s***]
+        //Reception des reponses [OGAME m s***]
         for (; nbParties != 0; nbParties--) {
             byte[] rep2 = new byte[12];
             int bytesRead = is.read(rep2);
@@ -136,16 +136,16 @@ public class Client {
             int nbJoueurs = rep2[8] & 0xff;
             System.out.println((new String(rep2, 5, 1)) + numPartie + (new String(rep2, 7, 1))
                 + nbJoueurs + (new String(rep2, 9, 3)));
-            System.out.print("Partie n°" + numPartie + " : ");
+            System.out.print("Partie numero " + numPartie + " : ");
             System.out.println(nbJoueurs + " joueurs inscrits");
             // if(bytesRead == -1) { break; }
         }
         return true;  
     }
 
-    public void preGameActionNEWPL(InputStream is, OutputStream os) { // [NEWPL␣id␣port***] -> [REGOK␣m***] ou [REGNO***]
+    public void preGameActionNEWPL(InputStream is, OutputStream os) { // [NEWPL id port***] -> [REGOK m***] ou [REGNO***]
         try {
-            //Envoi de la requete [NEWPL␣id␣port***]
+            //Envoi de la requete [NEWPL id port***]
             //On demande un id
             byte[] bytesId = askId();
 
@@ -159,7 +159,7 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception de la reponse [REGOK␣m***] ou [REGNO***]
+            //Reception de la reponse [REGOK m***] ou [REGNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -172,9 +172,9 @@ public class Client {
         }
     }
 
-    public void preGameActionREGIS(InputStream is, OutputStream os) { // [REGIS␣id␣port␣m***] -> [REGOK␣m***] ou [REGNO***]
+    public void preGameActionREGIS(InputStream is, OutputStream os) { // [REGIS id port m***] -> [REGOK m***] ou [REGNO***]
         try {
-            //Envoi de la requete [REGIS␣id␣port␣m***]
+            //Envoi de la requete [REGIS id port m***]
             //On demande un id
             byte[] bytesId = askId();
 
@@ -193,7 +193,7 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception de la reponse [REGOK␣m***] ou [REGNO***]
+            //Reception de la reponse [REGOK m***] ou [REGNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -206,14 +206,14 @@ public class Client {
         }
     }
 
-    public void preGameActionUNREG(InputStream is, OutputStream os) { // [UNREG***] -> [UNROK␣m***] ou [DUNNO***]
+    public void preGameActionUNREG(InputStream is, OutputStream os) { // [UNREG***] -> [UNROK m***] ou [DUNNO***]
         try {
             //Envoi de la requete [UNREG***]
             byte[] req = "UNREG".getBytes();
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
             
-            //Reception de la reponse [UNROK␣m***] ou [DUNNO***]
+            //Reception de la reponse [UNROK m***] ou [DUNNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -242,9 +242,9 @@ public class Client {
         }
     }
 
-    public void preGameActionSIZE(InputStream is, OutputStream os) { // [SIZE?␣m***] -> [SIZE!␣m␣h␣w***] ou [DUNNO***]
+    public void preGameActionSIZE(InputStream is, OutputStream os) { // [SIZE? m***] -> [SIZE! m h w***] ou [DUNNO***]
         try {
-            //Envoi de la requete [SIZE?␣m***]
+            //Envoi de la requete [SIZE? m***]
             //On demande un numero de partie
             byte[] bytePartie = askNumGame();
 
@@ -253,7 +253,7 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception de la reponse [SIZE!␣m␣h␣w***] ou [DUNNO***]
+            //Reception de la reponse [SIZE! m h w***] ou [DUNNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -285,9 +285,9 @@ public class Client {
         }
     }
 
-    public void preGameActionLIST(InputStream is, OutputStream os) { // [LIST?␣m***] -> ([LIST!␣m␣s***] et [PLAYR␣id***]) ou [DUNNO***]
+    public void preGameActionLIST(InputStream is, OutputStream os) { // [LIST? m***] -> ([LIST! m s***] et [PLAYR id***]) ou [DUNNO***]
         try {
-            //Envoi de la requete [LIST?␣m***]
+            //Envoi de la requete [LIST? m***]
             //On demande un numero de partie
             byte[] bytePartie = askNumGame();
 
@@ -296,7 +296,7 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception de la reponse ([LIST!␣m␣s***] et s reponses [PLAYR␣id***]) ou [DUNNO***]
+            //Reception de la reponse ([LIST! m s***] et s reponses [PLAYR id***]) ou [DUNNO***]
             byte[] rep = new byte[12];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -314,7 +314,7 @@ public class Client {
                     System.out.print("Partie n°" + numPartie + " : ");
                     System.out.println(nbJoueurs + " joueurs inscrits");
 
-                    //Reception de s reponse(s) [PLAYR␣id***]
+                    //Reception de s reponse(s) [PLAYR id***]
                     for (; nbJoueurs != 0; nbJoueurs--) {
                         byte[] rep2 = new byte[17];
                         bytesRead = is.read(rep2);
@@ -347,14 +347,14 @@ public class Client {
         }
     }
 
-    public void preGameActionGAME(InputStream is, OutputStream os) { //[GAME?***] -> [GAMES␣n***] et [OGAME␣m␣s***]
+    public void preGameActionGAME(InputStream is, OutputStream os) { //[GAME?***] -> [GAMES n***] et [OGAME m s***]
         try {
             //Envoi de la requete [GAME?***]
             byte[] req = "GAME?".getBytes();
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception de la reponse [GAMES␣n***] et de n reponse(s) [OGAME␣m␣s***]
+            //Reception de la reponse [GAMES n***] et de n reponse(s) [OGAME m s***]
             byte[] rep = new byte[10];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -367,21 +367,21 @@ public class Client {
         }
     }
 
-    public void doSTART(InputStream is, OutputStream os) { //[START***] -> [WELCO␣m␣h␣w␣f␣ip␣port***] et [POSIT␣id␣x␣y***]
+    public void doSTART(InputStream is, OutputStream os) { //[START***] -> [WELCO m h w f ip port***] et [POSIT id x y***]
         try {
             //Envoi de la requete [START***]
             byte[] req = "START".getBytes();
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception des reponses [WELCO␣m␣h␣w␣f␣ip␣port***] et [POSIT␣id␣x␣y***]
+            //Reception des reponses [WELCO m h w f ip port***] et [POSIT id x y***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
                 return;
             }
-            //On s'occupe de [WELCO␣m␣h␣w␣f␣ip␣port***]
+            //On s'occupe de [WELCO m h w f ip port***]
             String action = new String(rep, 0, 5);
             System.out.print(action);
             if (!action.equals("WELCO")) {
@@ -401,7 +401,7 @@ public class Client {
             System.out.println("Bienvenue !\nLe labyrinthe a pour hauteur " + height
                 + ", pour largeur " + width + " et il y a " + nbGhosts + " a capturer !\nBONNE CHANCE\n");
             
-            //On s'occupe de [POSIT␣id␣x␣y***]
+            //On s'occupe de [POSIT id x y***]
             action = new String(rep, 39, 5);
             System.out.print(action);
             if (!action.equals("POSIT")) {
