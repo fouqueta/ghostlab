@@ -196,18 +196,35 @@ void* listen_player(void* args){
             }else if(strncmp(action, "START", 5) == 0){
                 //TODO: Joueur prêt
                 //TODO: Lancer un thread qui va s'occuper de la partie
+                pthread_mutex_lock(&(player_infos->g->verrou_for_cond));
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 player_infos->g->nb_ready++;
-                if(player_infos->g->nb_ready == player_infos->g->nb_players){
+                if(player_infos->g->nb_ready == player_infos->g->nb_players && player_infos->g->nb_players > 1){
+                    getAMaze(player_infos->g->laby);
+                    player_infos->g->nb_ghosts = 10;
+                    initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
+                    placePlayers(player_infos->g);
+                    set_port(player_infos->g);
+                    player_infos->g->state_game = 2;
+                    pthread_mutex_unlock(&(player_infos->g->verrou_server));
+
                     pthread_cond_signal(&(player_infos->g->cond));
                     pthread_t th;
                     pthread_create(&th, NULL, gameFunc, player_infos->g);
+                }else{
+                    int nb_players = player_infos->g->nb_players;
+                    int nb_ready = player_infos->g->nb_ready;
+                    pthread_mutex_unlock(&(player_infos->g->verrou_server));
+                    while(nb_ready != nb_players || nb_players < 2){
+                        pthread_cond_wait(&(player_infos->g->cond), &(player_infos->g->verrou_for_cond));
+                        pthread_mutex_lock(&(player_infos->g->verrou_server));
+                        nb_players = player_infos->g->nb_players;
+                        nb_ready = player_infos->g->nb_ready;
+                        pthread_mutex_unlock(&(player_infos->g->verrou_server));
+                    }
                 }
-                while(player_infos->g->nb_ready != player_infos->g->nb_players && player_infos->g->nb_players > 1){
-                    pthread_cond_wait(&(player_infos->g->cond), &(player_infos->g->verrou_server));
-                }
-                pthread_mutex_unlock(&(player_infos->g->verrou_server));
 
+                pthread_mutex_unlock(&(player_infos->g->verrou_for_cond));
                 if(sendStart(sock, player_infos)==-1){
                     break;
                 }
@@ -257,6 +274,7 @@ void* listen_player(void* args){
     }
     /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
     Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/
+    printf("Sorti\n");
     free(message);
     close(sock);
 

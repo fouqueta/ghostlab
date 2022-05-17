@@ -9,27 +9,12 @@ void init_game_list(){
         game_list[i]->nb_players = 0;
         game_list[i]->nb_ready = 0;
         game_list[i]->nb_ghosts = 0;
+        game_list[i]->ip = "225.26.29.8\0";
         game_list[i]->verrou_server = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+
+        game_list[i]->verrou_for_cond = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
         game_list[i]->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
     }
-
-    //TODO: DELETE, juste pour le teste d'avoir une partie
-    game_list[21]->state_game = 1;
-    game_list[21]->nb_players = 1;
-    game_list[21]->laby = malloc(sizeof(maze));
-    game_list[21]->laby->lenX = 10;
-    game_list[21]->laby->lenY = 20;
-    game_list[21]->nb_ready = 1;
-    game_list[21]->nb_ghosts = 10;
-    player * p = malloc(sizeof(player));
-    memmove(p->name,"12345678",8);
-    p->verrou_player = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
-    player_node * pn = malloc(sizeof(player_node));
-    pn->p = p;
-    player_array pa = {
-            .first = pn
-    };
-    game_list[21]->list = pa;
 }
 
 int getNbNotStarted(){
@@ -92,13 +77,10 @@ void remove_player_game(player * player_infos, int m){
 void* gameFunc(void* args){
     game * g = (game *)args;
     srand(time(NULL));
-    pthread_mutex_lock(&(g->verrou_server));
-    getAMaze(g->laby);
-    initGhosts(g->laby, 10);
-    pthread_mutex_unlock(&(g->verrou_server));
-    while(g->state_game == 1){
+
+    while(g->state_game == 2){
         printf("fantomes\n");
-        sleep(5);
+        sleep(10);
         //TODO: Deplacer fantomes
         /*int i = rand() % g->nb_ghosts;
         while(1){
@@ -146,10 +128,50 @@ void* gameFunc(void* args){
                     }
                     break;
             }
-            pthread_mutex_unlock(&(g->verrou_server));*/
-        }
+            pthread_mutex_unlock(&(g->verrou_server));
+        }*/
 
     }
 
     return 0;
+}
+
+void placePlayers(game * g){
+    player_node * node = g->list.first;
+    srand(time(NULL));
+    for(int i=0; i<g->nb_players;i++){
+        while(1){
+            int x = rand() % g->laby->lenX;
+            int y = rand() % g->laby->lenY;
+            if(g->laby->maze[x][y] == CHARPATH){
+                node->p->x = x;
+                node->p->y = y;
+                break;
+            }
+        }
+        node = node->next;
+    }
+}
+
+void set_port(game * g){
+    while(1){
+        for(int i=1024;i<10000;i++){
+            char port[128];
+            memset(port, 0, 128);
+            snprintf(port, 128, "%d", i);
+            if(not_use(port)){
+               memmove(g->port, port, 4);
+               return;
+            }
+        }
+    }
+}
+
+int not_use(char * port){
+    for(int i=0;i<NB_GAMES;i++){
+        if(game_list[i]->state_game == 2 && strncmp(game_list[i]->port, port, 4) == 0) {
+            return 0;
+        }
+    }
+    return 1;
 }

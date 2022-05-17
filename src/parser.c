@@ -16,12 +16,13 @@ int sendGames(int fd){
     memmove(mess_games+len, &n, sizeof(uint8_t)); len += sizeof(uint8_t);
     memmove(mess_games+len, stars, strlen(stars)); len += strlen(stars);
     int r = send(fd, mess_games, len, 0);
+    free(mess_games);
     if(r==-1){
         pthread_mutex_unlock(&verrou_main);
         perror("send");
         return -1;
     }
-    free(mess_games);
+
 
     char * ogame = "OGAME \0";
     for(int i=0;i<NB_GAMES;i++){
@@ -39,6 +40,7 @@ int sendGames(int fd){
             memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
             r = send(fd, message, len, 0);
+            free(message);
             if(r==-1){
                 pthread_mutex_unlock(&verrou_main);
                 perror("send");
@@ -88,32 +90,32 @@ int sendGList(int fd, game * g){
         }
         char id[8]; memset(id,0,8); memmove(id, p->name, 8);
 
-        char x[128];
-        if(p->x<100){
-            snprintf(x, 128, " %d ", p->x);
-        }else if(p->x<10){
-            snprintf(x, 128, " 0%d ", p->x);
+        char x[4];
+        if(p->x>99){
+            snprintf(x, 128, "%d", p->x);
+        }else if(p->x>9){
+            snprintf(x, 128, "0%d", p->x);
         }else{
-            snprintf(x, 128, " 00%d ", p->x);
+            snprintf(x, 128, "00%d", p->x);
         }
-        x[5] = '\0';
+        x[3] = '\0';
 
-        char y[128];
-        if(p->y<100){
-            snprintf(y, 128, "%d ", p->y);
-        }else if(p->y<10){
-            snprintf(y, 128, "0%d ", p->y);
+        char y[4];
+        if(p->y>99){
+            snprintf(y, 128, "%d", p->y);
+        }else if(p->y>9){
+            snprintf(y, 128, "0%d", p->y);
         }else{
-            snprintf(y, 128, "00%d ", p->y);
+            snprintf(y, 128, "00%d", p->y);
         }
-        y[4] = '\0';
+        y[3] = '\0';
 
-        char s[128];
-        if(p->score<1000) {
+        char s[5];
+        if(p->score>999) {
             snprintf(s, 128, "%d", p->score);
-        }else if(p->score<100){
+        }else if(p->score>99){
             snprintf(s, 128, "0%d", p->score);
-        }else if(p->x<10){
+        }else if(p->x>9){
             snprintf(s, 128, "00%d", p->score);
         }else{
             snprintf(s, 128, "000%d", p->score);
@@ -148,11 +150,11 @@ int sendSize(int fd, game * g){
     char * size = "SIZE! \0";
     char * stars = "***\0";
     pthread_mutex_lock(&(g->verrou_server));
-
+    printf("ici\n");
     uint8_t m = g->id_game;
     uint16_t h = g->laby->lenX;
     uint16_t w = g->laby->lenY;
-
+    printf("ici\n");
     pthread_mutex_unlock(&(g->verrou_server));
 
     h = htole16(h);
@@ -249,7 +251,9 @@ int sendRegok(int fd, int8_t m){
     memmove(message+len, &m, sizeof(int8_t)); len += sizeof(int8_t);
     memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
-    if(send(fd, message, len, 0) == -1){
+    int r = send(fd, message, len, 0);
+    free(message);
+    if(r==-1){
         return -1;
     }
     return 0;
@@ -264,7 +268,9 @@ int sendUnrok(int fd, int8_t m){
     memmove(message+len, &m, sizeof(int8_t)); len += sizeof(int8_t);
     memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
-    if(send(fd, message, len, 0) == -1){
+    int r = send(fd, message, len, 0);
+    free(message);
+    if(r==-1){
         return -1;
     }
     return 0;
@@ -272,5 +278,78 @@ int sendUnrok(int fd, int8_t m){
 
 int sendStart(int fd, player * p){
     //TODO: Envoyer WELCO + POSIT
+    char * welco = "WELCO \0";
+    int len_welco = strlen(welco);
+    char * posit = "POSIT \0";
+    int len_posit = strlen(posit);
+    char * stars = "***\0";
+    int len_stars = strlen(stars);
+
+    char * ip = malloc(15);
+    memset(ip, '#', 15);
+    memmove(ip, p->g->ip, strlen(p->g->ip));
+
+    int len = len_welco + sizeof(uint8_t)*2 + sizeof(uint16_t)*2 + 15 + 4 + len_stars + 5;
+    char * buffer = malloc(len);
+    memset(buffer, 0, len);
+    len = 0;
+
+    memmove(buffer + len, welco, len_welco); len += len_welco;
+    memmove(buffer + len, &p->g->id_game, sizeof(uint8_t)); len += sizeof(uint8_t);
+    memmove(buffer + len, " ", 1); len += 1;
+    memmove(buffer + len, &p->g->laby->lenX, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(buffer + len, " ", 1); len += 1;
+    memmove(buffer + len, &p->g->laby->lenY, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(buffer + len, " ", 1); len += 1;
+    memmove(buffer + len, &p->g->nb_ghosts, sizeof(uint8_t)); len += sizeof(uint8_t);
+    memmove(buffer + len, " ", 1); len += 1;
+    memmove(buffer + len, ip, 15); len += 15;
+    memmove(buffer + len, " ", 1); len += 1;
+    memmove(buffer + len, p->g->port, 4); len += 4;
+    memmove(buffer + len, stars, len_stars); len += len_stars;
+
+    int r = send(fd, buffer, len, 0);
+    free(buffer);
+    if(r == -1){
+        return -1;
+    }
+
+    char x[4];
+    if(p->x>99){
+        snprintf(x, 128, "%d", p->x);
+    }else if(p->x>9){
+        snprintf(x, 128, "0%d", p->x);
+    }else{
+        snprintf(x, 128, "00%d", p->x);
+    }
+    x[3] = '\0';
+
+    char y[4];
+    if(p->y>99){
+        snprintf(y, 128, "%d", p->y);
+    }else if(p->y>9){
+        snprintf(y, 128, "0%d", p->y);
+    }else{
+        snprintf(y, 128, "00%d", p->y);
+    }
+    y[3] = '\0';
+
+    len = len_posit + len_stars + 8 + 3*2 + 2;
+    char * message = malloc(len);
+    len = 0;
+
+    memmove(message + len, posit, len_posit); len += len_posit;
+    memmove(message + len, p->name, 8); len += 8;
+    memmove(message + len, " ", 1); len += 1;
+    memmove(message + len, x, 3); len += 3;
+    memmove(message + len, " ", 1); len += 1;
+    memmove(message + len, y, 3); len += 3;
+    memmove(message + len, stars, len_stars); len += len_stars;
+
+    r = send(fd, message, len, 0);
+    free(message);
+    if(r == -1){
+        return -1;
+    }
     return 0;
 }

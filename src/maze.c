@@ -15,7 +15,7 @@ void getAMaze(maze * laby){
         }
     }
     generatorMaze(laby->maze, visited, 0, 0, lenX, lenY);
-    /*printMaze(maze,lenX,lenY);
+    /*printMaze(laby->maze,lenX,lenY);
     printMaze(visited,lenX,lenY);*/
     for(int i=0;i<lenX;i++){
         free(visited[i]);
