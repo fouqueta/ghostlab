@@ -67,6 +67,13 @@ int containsStars(char * buff, int len){
     return -1;
 }
 
+int getDistance(char *message){
+    char buffer[4];
+    memcpy(buffer, message, 3);
+    buffer[3] = '\0';
+    return atoi(buffer);
+}
+
 void* listen_player(void* args){
     int sock = *(int *) args;
 
@@ -199,7 +206,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_for_cond));
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 player_infos->g->nb_ready++;
-                if(player_infos->g->nb_ready == player_infos->g->nb_players && player_infos->g->nb_players > 1){
+                if(player_infos->g->nb_ready == player_infos->g->nb_players) { //&& player_infos->g->nb_players > 1){
                     getAMaze(player_infos->g->laby);
                     player_infos->g->nb_ghosts = 10;
                     initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
@@ -215,7 +222,7 @@ void* listen_player(void* args){
                     int nb_players = player_infos->g->nb_players;
                     int nb_ready = player_infos->g->nb_ready;
                     pthread_mutex_unlock(&(player_infos->g->verrou_server));
-                    while(nb_ready != nb_players || nb_players < 2){
+                    while(nb_ready != nb_players) { //|| nb_players < 2){
                         pthread_cond_wait(&(player_infos->g->cond), &(player_infos->g->verrou_for_cond));
                         pthread_mutex_lock(&(player_infos->g->verrou_server));
                         nb_players = player_infos->g->nb_players;
@@ -235,16 +242,84 @@ void* listen_player(void* args){
             }
         }else if(player_infos->g->state_game == 2){
             //Cas si la partie a commencée
+            int distance = getDistance(message+6);
+            char **lab = player_infos->g->laby->maze;
+            int flag_ghost = 0;
+            int res_move;
             if(strncmp(action, "UPMOV", 5) == 0){
-                //TODO: Se deplace vers le haut
+                for(int i = 0; i<distance; i++){
+                    int x = player_infos->x;
+                    int y = player_infos->y;
+                    if(x-1 < 0 || lab[x-1][y] == CHARWALL){
+                        break;
+                    }
+                    else {
+                        res_move = move_player(player_infos, x-1, y);
+                        if(res_move == 1){
+                            flag_ghost = flag_ghost + 1;
+                        }
+                    }
+                }
+                if(sendMove(sock, player_infos, flag_ghost) == -1){
+                    break;
+                }
             }else if(strncmp(action, "DOMOV", 5) == 0){
-                //TODO: Se deplace vers le bas
+                for(int i = 0; i<distance; i++){
+                    int x = player_infos->x;
+                    int y = player_infos->y;
+                    if(x+1 > player_infos->g->laby->lenX || lab[x+1][y] == CHARWALL){
+                        break;
+                    }
+                    else {
+                        res_move = move_player(player_infos, x+1, y);
+                        if(res_move == 1){
+                            flag_ghost = flag_ghost + 1;
+                        }
+                    }
+                }
+                if(sendMove(sock, player_infos, flag_ghost) == -1){
+                    break;
+                }
             }else if(strncmp(action, "LEMOV", 5) == 0){
-                //TODO: Se deplace vers la gauche
+                for(int i = 0; i<distance; i++){
+                    int x = player_infos->x;
+                    int y = player_infos->y;
+                    if(y-1 < 0 || lab[x][y-1] == CHARWALL){
+                        break;
+                    }
+                    else {
+                        res_move = move_player(player_infos, x, y-1);
+                        if(res_move == 1){
+                            flag_ghost = flag_ghost + 1;
+                        }
+                    }
+                }
+                if(sendMove(sock, player_infos, flag_ghost) == -1){
+                    break;
+                }
             }else if(strncmp(action, "RIMOV", 5) == 0){
-                //TODO: Se deplace vers la droite
+                for(int i = 0; i<distance; i++){
+                    int x = player_infos->x;
+                    int y = player_infos->y;
+                    if(y+1 > player_infos->g->laby->lenY || lab[x][y+1] == CHARWALL){
+                        break;
+                    }
+                    else {
+                        res_move = move_player(player_infos, x, y+1);
+                        if(res_move == 1){
+                            flag_ghost = flag_ghost + 1;
+                        }
+                    }
+                }
+                if(sendMove(sock, player_infos, flag_ghost) == -1){
+                    break;
+                }
             }else if(strncmp(action, "IQUIT", 5) == 0){
-                //TODO: Quitter la partie
+                if(sendQuit(sock) == -1){
+                    break;
+                }
+                close(sock);
+                break;
             }else if(strncmp(action, "GLIS?", 5) == 0){
                 //Liste des joueurs dans la partie du joueur
                 if(sendGList(sock, player_infos->g) == -1){

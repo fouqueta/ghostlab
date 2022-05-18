@@ -71,10 +71,10 @@ public class InGameTCP implements Runnable {
     }
 
     
-    // [UPMOV␣d***], [DOMOV␣d***], [LEMOV␣d***] ou [RIMOV␣d***] -> [MOVE!␣x␣y***] ou [MOVEF␣x␣y␣p***]
+    // [UPMOV d***], [DOMOV d***], [LEMOV d***] ou [RIMOV d***] -> [MOVE! x y***] ou [MOVEF x y p***]
     public void inGameActionsMOV(String instr, InputStream is, OutputStream os) {
         try {
-            //Envoi d'une requete [UPMOV␣d***], [DOMOV␣d***], [LEMOV␣d***] ou [RIMOV␣d***]
+            //Envoi d'une requete [UPMOV d***], [DOMOV d***], [LEMOV d***] ou [RIMOV d***]
             String dir = "";
             switch (instr.charAt(0)) {
                 case 'D':
@@ -94,7 +94,7 @@ public class InGameTCP implements Runnable {
             byte[] req = sreq.getBytes();
             writeReq(os, req);
 
-            //Reception de la reponse [MOVE!␣x␣y***] ou [MOVEF␣x␣y␣p***]
+            //Reception de la reponse [MOVE! x y***] ou [MOVEF x y p***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -129,13 +129,13 @@ public class InGameTCP implements Runnable {
         }
     }
 
-    public void inGameActionGLIS(InputStream is, OutputStream os) { // [GLIS?***] -> [GLIS!␣s***] et s messages [GPLYR␣id␣x␣y␣p***] 
+    public void inGameActionGLIS(InputStream is, OutputStream os) { // [GLIS?***] -> [GLIS! s***] et s messages [GPLYR id x y p***] 
         try {
             //Envoi de la requete [GLIS?***]
             byte[] req = "GLIS?***".getBytes();
             writeReq(os, req);
 
-            //Reception de la reponse [GLIS!␣s***] et s messages [GPLYR␣id␣x␣y␣p***]
+            //Reception de la reponse [GLIS! s***] et s messages [GPLYR id x y p***]
             byte[] rep = new byte[10];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -150,7 +150,7 @@ public class InGameTCP implements Runnable {
             }
             int nbJoueurs = rep[6] & 0xff;
             System.out.println(nbJoueurs + (new String(rep, 7, 3)));
-            //Reception de s reponses [GPLYR␣id␣x␣y␣p***]
+            //Reception de s reponses [GPLYR id x y p***]
             for (; nbJoueurs != 0; nbJoueurs--) {
                 byte[] rep2 = new byte[30];
                 bytesRead = is.read(rep2);
@@ -179,9 +179,9 @@ public class InGameTCP implements Runnable {
         }
     }
 
-    public void inGameActionSEND(InputStream is, OutputStream os) { // [SEND?␣id␣mess***] -> [SEND!***] ou [NSEND***]
+    public void inGameActionSEND(InputStream is, OutputStream os) { // [SEND? id mess***] -> [SEND!***] ou [NSEND***]
         try {
-            //Envoi de la requete [SEND?␣id␣mess***]
+            //Envoi de la requete [SEND? id mess***]
             //On demande un id
             byte[] bytesId = client.askId();
             //On demande un message
@@ -222,9 +222,9 @@ public class InGameTCP implements Runnable {
         }
     }
 
-    public void inGameActionMALL(InputStream is, OutputStream os) { // [MALL?␣mess***] -> [MALL!***]
+    public void inGameActionMALL(InputStream is, OutputStream os) { // [MALL? mess***] -> [MALL!***]
         try {
-            //Envoi de la requete [MALL?␣mess***]
+            //Envoi de la requete [MALL? mess***]
             //On demande un message
             byte[] bytesMess = askMess();
         

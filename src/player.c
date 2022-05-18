@@ -77,3 +77,13 @@ player * init_player(char pseudo[8], char port[4]){
     p->y = 0;
     return p;
 }
+
+int move_player(player *p, int x, int y){
+    p->x = x;
+    p->y = y;
+    maze *lab = p->g->laby;
+    if(checkGhost(lab, p->x, p->y)==1){
+        return 1;
+    }
+    return 0;
+}

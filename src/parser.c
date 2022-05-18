@@ -353,3 +353,120 @@ int sendStart(int fd, player * p){
     }
     return 0;
 }
+
+int sendMove(int fd, player *p, int ghost){
+    int count;
+    if(ghost > 0){
+        char *movef = "MOVEF \0";
+        int len_movef = strlen(movef);
+        char *stars = "***\0";
+        int len_stars = strlen(stars);
+
+        int len = len_movef + len_stars + 3*2 + 3 + 4;
+        char *message = malloc(len);
+        len = 0;
+
+        char x[4];
+        if(p->x>99){
+            snprintf(x, 128, "%d", p->x);
+        }else if(p->x>9){
+            snprintf(x, 128, "0%d", p->x);
+        }else{
+            snprintf(x, 128, "00%d", p->x);
+        }
+        x[3] = '\0';
+
+        char y[4];
+        if(p->y>99){
+            snprintf(y, 128, "%d", p->y);
+        }else if(p->y>9){
+            snprintf(y, 128, "0%d", p->y);
+        }else{
+            snprintf(y, 128, "00%d", p->y);
+        }
+        y[3] = '\0';
+
+        char sc[5];
+        p->score = p->score + ghost;
+        if(p->score > 999){
+            snprintf(sc, 128, "%d", p->score);
+        }
+        else if(p->score > 99){
+            snprintf(sc, 128, "0%d", p->score);
+        }
+        else if(p->score > 9){
+            snprintf(sc, 128, "00%d", p->score);
+        }
+        else{
+            snprintf(sc, 128, "000%d", p->score);
+        }
+        sc[4] = '\0';
+
+        memmove(message + len, movef, len_movef); len += len_movef;
+        memmove(message + len, x, 3); len += 3;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, y, 3); len += 3;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, sc, 4); len += 4;
+        memmove(message + len, stars, len_stars); len += len_stars;
+
+        count = send(fd, message, len, 0);
+        free(message);
+        if(count == -1){
+            return -1;
+        }
+    }
+    else{
+        char *move = "MOVE! \0";
+        int len_move = strlen(move);
+        char *stars = "***\0";
+        int len_stars = strlen(stars);
+
+        int len = len_move + len_stars + 3*2 + 1;
+        char *message = malloc(len);
+        len = 0;
+
+        char x[4];
+        if(p->x>99){
+            snprintf(x, 128, "%d", p->x);
+        }else if(p->x>9){
+            snprintf(x, 128, "0%d", p->x);
+        }else{
+            snprintf(x, 128, "00%d", p->x);
+        }
+        x[3] = '\0';
+
+        char y[4];
+        if(p->y>99){
+            snprintf(y, 128, "%d", p->y);
+        }else if(p->y>9){
+            snprintf(y, 128, "0%d", p->y);
+        }else{
+            snprintf(y, 128, "00%d", p->y);
+        }
+        y[3] = '\0';
+
+        memmove(message + len, move, len_move); len += len_move;
+        memmove(message + len, x, 3); len += 3;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, y, 3); len += 3;
+        memmove(message + len, stars, len_stars); len += len_stars;
+
+        count = send(fd, message, len, 0);
+        free(message);
+        if(count == -1){
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int sendQuit(int fd){
+    char *bye = "GOBYE***\0";
+    int len_bye = strlen(bye);
+    int count = send(fd, bye, len_bye, 0);
+    if(count == -1){
+        return -1;
+    }
+    return 0;
+}

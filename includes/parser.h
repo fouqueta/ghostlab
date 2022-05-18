@@ -18,3 +18,7 @@ int sendRegok(int fd, int8_t m);
 int sendUnrok(int fd, int8_t m);
 
 int sendStart(int fd, player * p);
+
+int sendMove(int fd, player *p, int ghost);
+
+int sendQuit(int fd);
