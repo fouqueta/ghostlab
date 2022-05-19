@@ -145,9 +145,11 @@ void initGhosts(maze * laby, int nb_ghosts){
     }
 }
 
-int checkGhost(maze *laby, int x, int y){
-    if(laby->ghosts[x][y] == 1){
-        return 1;
+int checkGhost(maze *laby,int nb_ghosts, int x, int y){
+    for(int i=0;i<nb_ghosts;i++){
+        if(laby->ghosts[i][0] == x && laby->ghosts[i][1] == y){
+            return 1;
+        }
     }
     return 0;
 }

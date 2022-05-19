@@ -81,9 +81,12 @@ player * init_player(char pseudo[8], char port[4]){
 int move_player(player *p, int x, int y){
     p->x = x;
     p->y = y;
+    pthread_mutex_lock(&(p->g->verrou_server));
     maze *lab = p->g->laby;
-    if(checkGhost(lab, p->x, p->y)==1){
+    if(checkGhost(lab, p->g->nb_ghosts, p->x, p->y)==1){
+        pthread_mutex_unlock(&(p->g->verrou_server));
         return 1;
     }
+    pthread_mutex_unlock(&(p->g->verrou_server));
     return 0;
 }

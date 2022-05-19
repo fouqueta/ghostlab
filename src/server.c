@@ -247,6 +247,7 @@ void* listen_player(void* args){
             int flag_ghost = 0;
             int res_move;
             if(strncmp(action, "UPMOV", 5) == 0){
+                pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;
                     int y = player_infos->y;
@@ -260,10 +261,12 @@ void* listen_player(void* args){
                         }
                     }
                 }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
             }else if(strncmp(action, "DOMOV", 5) == 0){
+                pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;
                     int y = player_infos->y;
@@ -277,10 +280,12 @@ void* listen_player(void* args){
                         }
                     }
                 }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
             }else if(strncmp(action, "LEMOV", 5) == 0){
+                pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;
                     int y = player_infos->y;
@@ -294,10 +299,12 @@ void* listen_player(void* args){
                         }
                     }
                 }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
             }else if(strncmp(action, "RIMOV", 5) == 0){
+                pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;
                     int y = player_infos->y;
@@ -311,6 +318,7 @@ void* listen_player(void* args){
                         }
                     }
                 }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
