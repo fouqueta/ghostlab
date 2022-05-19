@@ -34,12 +34,12 @@ public class InGameUDP implements Runnable {
                         ByteBuffer rep = ByteBuffer.allocate(MAX_BUFFER);
                         dsc.receive(rep);
                         String action = new String(rep.array(), 0, 6);
-                        System.out.print(action);
+                        if(client.isVerbeux()) { System.out.print(action); }
                         if (action.equals("MESSP ")) { //[MESSP id2 mess+++]
                             String id = new String(rep.array(), 6, 8);
                             String mess = new String(rep.array(), 15, rep.array().length-18);
-                            System.out.println(id + (new String(rep.array(), 14, 1)) + mess 
-                                + (new String(rep.array(), rep.array().length-3, 3)));
+                            if(client.isVerbeux()) { System.out.println(id + (new String(rep.array(), 14, 1)) + mess 
+                                + (new String(rep.array(), rep.array().length-3, 3))); }
                             System.out.println("=> " + id + " vous a dit : " + mess);
                         } 
                         else {
@@ -55,6 +55,7 @@ public class InGameUDP implements Runnable {
                     }
                 }  
             }
+            System.out.println("Deconnexion UDP");
             dsc.close();
         } catch (Exception e) {
             e.printStackTrace();

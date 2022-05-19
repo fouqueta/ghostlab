@@ -100,12 +100,12 @@ public class InGameTCP implements Runnable {
                 return;
             }
             String action = new String(rep, 0, 6);
-            System.out.print(action);
+            if(client.isVerbeux()) { System.out.print(action); }
             switch (action) {
                 case "MOVE! ":
                     String posX = new String(rep, 6, 3);
                     String posY = new String(rep, 10, 3);
-                    System.out.println(posX + (new String(rep, 9, 1)) + posY + (new String(rep, 13, 3)));
+                    if(client.isVerbeux()) { System.out.println(posX + (new String(rep, 9, 1)) + posY + (new String(rep, 13, 3))); }
                     System.out.println("Vous etes maintenant en position (" + posX.replaceFirst("^0+(?!$)", "") 
                         + "," + posY.replaceFirst("^0+(?!$)", "") + ").");
                     break;
@@ -113,8 +113,8 @@ public class InGameTCP implements Runnable {
                     posX = new String(rep, 6, 3);
                     posY = new String(rep, 10, 3);
                     String score = new String(rep, 14, 4);
-                    System.out.println(posX + (new String(rep, 9, 1)) + posY + (new String(rep, 13, 1)) 
-                            + score + (new String(rep, 18, 3)));
+                    if(client.isVerbeux()) { System.out.println(posX + (new String(rep, 9, 1)) + posY + (new String(rep, 13, 1)) 
+                            + score + (new String(rep, 18, 3))); }
                     score = score.replaceFirst("^0+(?!$)", "");
                     System.out.println("Vous avez attrape un fantome !");
                     System.out.println("Vous etes maintenant en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 
@@ -143,13 +143,13 @@ public class InGameTCP implements Runnable {
                 return;
             }
             String action = new String(rep, 0, 6);
-            System.out.print(action);
+            if(client.isVerbeux()) { System.out.print(action); }
             if (!action.equals("GLIS! ")) {
                 System.out.println(MESS_ERROR);
                 return;
             }
             int nbJoueurs = rep[6] & 0xff;
-            System.out.println(nbJoueurs + (new String(rep, 7, 3)));
+            if(client.isVerbeux()) { System.out.println(nbJoueurs + (new String(rep, 7, 3))); }
             //Reception de s reponses [GPLYR id x y p***]
             for (; nbJoueurs != 0; nbJoueurs--) {
                 byte[] rep2 = new byte[30];
@@ -159,7 +159,7 @@ public class InGameTCP implements Runnable {
                     break;
                 }
                 action = new String(rep2, 0, 6);
-                System.out.print(action);
+                if(client.isVerbeux()) { System.out.print(action); }
                 if (!action.equals("GPLYR ")) {
                     System.out.println(MESS_ERROR);
                     break;
@@ -168,8 +168,8 @@ public class InGameTCP implements Runnable {
                 String posX = new String(rep2, 15, 3);
                 String posY = new String(rep2, 19, 3);
                 String score = new String(rep2, 23, 4);
-                System.out.println(id + (new String(rep2, 14, 1)) + posX + (new String(rep2, 18, 1)) 
-                        + posY + (new String(rep2, 22, 1)) + score + (new String(rep2, 27, 3)));
+                if(client.isVerbeux()) { System.out.println(id + (new String(rep2, 14, 1)) + posX + (new String(rep2, 18, 1)) 
+                        + posY + (new String(rep2, 22, 1)) + score + (new String(rep2, 27, 3))); }
                 score = score.replaceFirst("^0+(?!$)", "");
                 System.out.println(id + " est en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 
                     + posY.replaceFirst("^0+(?!$)", "") + ")" + " et a " + score + " points.");
@@ -202,7 +202,7 @@ public class InGameTCP implements Runnable {
                 return;
             }
             String action = new String(rep, 0, 8);
-            System.out.println(action);
+            if(client.isVerbeux()) { System.out.println(action); }
             switch (action) {
                 case "SEND!***":
                     System.out.println("Votre message a bien ete envoye.");
@@ -241,7 +241,7 @@ public class InGameTCP implements Runnable {
                 return;
             }
             String action = new String(rep, 0, 8);
-            System.out.println(action);
+            if(client.isVerbeux()) { System.out.println(action); }
             switch (action) {
                 case "MALL!***":
                     System.out.println("Votre message a bien ete envoye.");
@@ -272,7 +272,7 @@ public class InGameTCP implements Runnable {
                 return;
             }
             String action = new String(rep, 0, 8);
-            System.out.println(action);
+            if(client.isVerbeux()) { System.out.println(action); }
             if (action.equals("GOBYE***")) {
                 synchronized(client) { 
                     client.setInGame(false); 
@@ -312,7 +312,7 @@ public class InGameTCP implements Runnable {
         try {
             os.write(req);
             os.flush();
-            System.out.println(new String(req));
+            if(client.isVerbeux()) { System.out.println(new String(req)); }
         } catch (IOException e) {
             e.printStackTrace();
         }

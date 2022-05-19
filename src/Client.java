@@ -5,6 +5,7 @@ import java.util.Scanner;
 public class Client {
     static final int MAX_BUFFER = 256;
     static final String MESS_ERROR = "Erreur : veuillez recommencer";
+    private boolean verbeux = false;
     private int portTCP;
     private int portUDP;
     private int portMult;
@@ -21,6 +22,8 @@ public class Client {
             System.exit(0);
         }
         
+        //rTODO: entrer ip en argument
+        
         Client client = new Client();
         client.portTCP = Integer.parseInt(args[0]);
 
@@ -29,6 +32,11 @@ public class Client {
             InputStream is = fdSock.getInputStream();
             OutputStream os = fdSock.getOutputStream();
             
+            System.out.println("Taper v pour lancer le jeu en mode verbeux, n'importe quelle touche sinon :");
+            if (client.scanner.nextLine().equals("v")) {
+                client.verbeux = true;
+            }
+
             //Des qu'on se connecte, on doit recevoir les messages GAMES et OGAME
             byte[] rep = new byte[10];
             int bytesRead = is.read(rep);
@@ -139,9 +147,9 @@ public class Client {
     }
 
 
-    public void preGameActionNEWPL(InputStream is, OutputStream os) { // [NEWPL␣id␣port***] -> [REGOK␣m***] ou [REGNO***]
+    public void preGameActionNEWPL(InputStream is, OutputStream os) { // [NEWPL id port***] -> [REGOK m***] ou [REGNO***]
         try {
-            //Envoi de la requete [NEWPL␣id␣port***]
+            //Envoi de la requete [NEWPL id port***]
             //On demande un id
             byte[] bytesId = askId();
 
@@ -155,7 +163,7 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception de la reponse [REGOK␣m***] ou [REGNO***]
+            //Reception de la reponse [REGOK m***] ou [REGNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -168,9 +176,9 @@ public class Client {
         }
     }
 
-    public void preGameActionREGIS(InputStream is, OutputStream os) { // [REGIS␣id␣port␣m***] -> [REGOK␣m***] ou [REGNO***]
+    public void preGameActionREGIS(InputStream is, OutputStream os) { // [REGIS id port m***] -> [REGOK m***] ou [REGNO***]
         try {
-            //Envoi de la requete [REGIS␣id␣port␣m***]
+            //Envoi de la requete [REGIS id port m***]
             //On demande un id
             byte[] bytesId = askId();
 
@@ -189,10 +197,10 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             os.write(req);
             os.flush();
-            System.out.println("REGIS " + new String(bytesId) + " " + (new String(bytesPort) + " "
-                    + (bytePartie[0] & 0xff) + "***"));
+            if(verbeux) { System.out.println("REGIS " + new String(bytesId) + " " + (new String(bytesPort) + " "
+                    + (bytePartie[0] & 0xff) + "***")); }
 
-            //Reception de la reponse [REGOK␣m***] ou [REGNO***]
+            //Reception de la reponse [REGOK m***] ou [REGNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -205,14 +213,14 @@ public class Client {
         }
     }
 
-    public void preGameActionUNREG(InputStream is, OutputStream os) { // [UNREG***] -> [UNROK␣m***] ou [DUNNO***]
+    public void preGameActionUNREG(InputStream is, OutputStream os) { // [UNREG***] -> [UNROK m***] ou [DUNNO***]
         try {
             //Envoi de la requete [UNREG***]
             byte[] req = "UNREG".getBytes();
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
             
-            //Reception de la reponse [UNROK␣m***] ou [DUNNO***]
+            //Reception de la reponse [UNROK m***] ou [DUNNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -220,16 +228,16 @@ public class Client {
                 return;
             }
             String action = new String(rep, 0, 5);
-            System.out.print(action);
+            if(verbeux) { System.out.print(action); }
             switch (action) {
                 case "UNROK":
                     int numPartie = rep[6] & 0xff;
-                    System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 3)));
+                    if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 3))); }
                     System.out.println("Vous avez bien ete desinscrit de la partie " + numPartie);
                     this.inscrit = false; 
                     break;
                 case "DUNNO":
-                    System.out.println(new String(rep, 5, 3));
+                    if(verbeux) { System.out.println(new String(rep, 5, 3)); }
                     System.out.println("Erreur : vous n'etiez pas inscrit dans une partie");
                     break;
                 default:
@@ -241,9 +249,9 @@ public class Client {
         }
     }
 
-    public void preGameActionSIZE(InputStream is, OutputStream os) { // [SIZE?␣m***] -> [SIZE!␣m␣h␣w***] ou [DUNNO***]
+    public void preGameActionSIZE(InputStream is, OutputStream os) { // [SIZE? m***] -> [SIZE! m h w***] ou [DUNNO***]
         try {
-            //Envoi de la requete [SIZE?␣m***]
+            //Envoi de la requete [SIZE? m***]
             //On demande un numero de partie
             byte[] bytePartie = askNumGame();
 
@@ -252,9 +260,9 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             os.write(req);
             os.flush();
-            System.out.println("SIZE? " + (bytePartie[0] & 0xff) + "***");
+            if(verbeux) { System.out.println("SIZE? " + (bytePartie[0] & 0xff) + "***"); }
 
-            //Reception de la reponse [SIZE!␣m␣h␣w***] ou [DUNNO***]
+            //Reception de la reponse [SIZE! m h w***] ou [DUNNO***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -262,19 +270,19 @@ public class Client {
                 return;
             }
             String action = new String(rep, 0, 5);
-            System.out.print(action);
+            if(verbeux) { System.out.print(action); }
             switch (action) {
                 case "SIZE!":
                     int numPartie = rep[6] & 0xff;
                     short height = byteArrayToShortSwap(rep, 8);
                     short width = byteArrayToShortSwap(rep, 11);
-                    System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
-                        + height + (new String(rep, 10, 1)) + width + (new String(rep, 13, 3)));
-                    System.out.println("Le labyrinthe de la partie n°" + numPartie + " a pour hauteur " + height
+                    if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
+                        + height + (new String(rep, 10, 1)) + width + (new String(rep, 13, 3))); }
+                    System.out.println("Le labyrinthe de la partie " + numPartie + " a pour hauteur " + height
                         + " et pour largeur " + width);
                     break;
                 case "DUNNO":
-                    System.out.println(new String(rep, 5, 3));
+                    if(verbeux) { System.out.println(new String(rep, 5, 3)); }
                     System.out.println("Erreur : ce numero ne correspond a aucune partie");
                     break;
                 default:
@@ -286,9 +294,9 @@ public class Client {
         }
     }
 
-    public void preGameActionLIST(InputStream is, OutputStream os) { // [LIST?␣m***] -> ([LIST!␣m␣s***] et [PLAYR␣id***]) ou [DUNNO***]
+    public void preGameActionLIST(InputStream is, OutputStream os) { // [LIST? m***] -> ([LIST! m s***] et [PLAYR id***]) ou [DUNNO***]
         try {
-            //Envoi de la requete [LIST?␣m***]
+            //Envoi de la requete [LIST? m***]
             //On demande un numero de partie
             byte[] bytePartie = askNumGame();
 
@@ -297,9 +305,9 @@ public class Client {
             req = concatByteArrays(req, "***".getBytes());
             os.write(req);
             os.flush();
-            System.out.println("LIST? " + (bytePartie[0] & 0xff) + "***");
+            if(verbeux) { System.out.println("LIST? " + (bytePartie[0] & 0xff) + "***"); }
 
-            //Reception de la reponse ([LIST!␣m␣s***] et s reponses [PLAYR␣id***]) ou [DUNNO***]
+            //Reception de la reponse ([LIST! m s***] et s reponses [PLAYR id***]) ou [DUNNO***]
             byte[] rep = new byte[12];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -307,17 +315,17 @@ public class Client {
                 return;
             }
             String action = new String(rep, 0, 5);
-            System.out.print(action);
+            if(verbeux) { System.out.print(action); }
             switch (action) {
                 case "LIST!":
                     int numPartie = rep[6] & 0xff;
                     int nbJoueurs = rep[8] & 0xff;
-                    System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
-                        + nbJoueurs + (new String(rep, 9, 3)));
-                    System.out.print("Partie n°" + numPartie + " : ");
+                    if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
+                        + nbJoueurs + (new String(rep, 9, 3))); }
+                    System.out.print("Partie " + numPartie + " : ");
                     System.out.println(nbJoueurs + " joueurs inscrits");
 
-                    //Reception de s reponse(s) [PLAYR␣id***]
+                    //Reception de s reponse(s) [PLAYR id***]
                     for (; nbJoueurs != 0; nbJoueurs--) {
                         byte[] rep2 = new byte[17];
                         bytesRead = is.read(rep2);
@@ -326,19 +334,19 @@ public class Client {
                             break;
                         }
                         action = new String(rep2, 0, 5);
-                        System.out.print(action);
+                        if(verbeux) { System.out.print(action); }
                         if (!action.equals("PLAYR")) {
                             System.out.println(MESS_ERROR);
                             break;
                         }
                         String id = new String(rep2, 6, 8);
-                        System.out.println((new String(rep2, 5, 1)) + id + (new String(rep2, 14, 3)));
+                        if(verbeux) { System.out.println((new String(rep2, 5, 1)) + id + (new String(rep2, 14, 3))); }
                         System.out.println(id);
                         // if(bytesRead == -1) { break; }
                     }
                     break;
                 case "DUNNO":
-                    System.out.println(new String(rep, 5, 3));
+                    if(verbeux) { System.out.println(new String(rep, 5, 3)); }
                     System.out.println("Erreur : ce numero ne correspond a aucune partie");
                     break;
                 default:
@@ -350,14 +358,14 @@ public class Client {
         }
     }
 
-    public void preGameActionGAME(InputStream is, OutputStream os) { //[GAME?***] -> [GAMES␣n***] et [OGAME␣m␣s***]
+    public void preGameActionGAME(InputStream is, OutputStream os) { //[GAME?***] -> [GAMES n***] et [OGAME m s***]
         try {
             //Envoi de la requete [GAME?***]
             byte[] req = "GAME?".getBytes();
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception de la reponse [GAMES␣n***] et de n reponse(s) [OGAME␣m␣s***]
+            //Reception de la reponse [GAMES n***] et de n reponse(s) [OGAME m s***]
             byte[] rep = new byte[10];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
@@ -370,23 +378,23 @@ public class Client {
         }
     }
 
-    public void doSTART(InputStream is, OutputStream os) { //[START***] -> [WELCO␣m␣h␣w␣f␣ip␣port***] et [POSIT␣id␣x␣y***]
+    public void doSTART(InputStream is, OutputStream os) { //[START***] -> [WELCO m h w f ip port***] et [POSIT id x y***]
         try {
             //Envoi de la requete [START***]
             byte[] req = "START".getBytes();
             req = concatByteArrays(req, "***".getBytes());
             writeReq(os, req);
 
-            //Reception des reponses [WELCO␣m␣h␣w␣f␣ip␣port***] et [POSIT␣id␣x␣y***]
+            //Reception des reponses [WELCO m h w f ip port***] et [POSIT id x y***]
             byte[] rep = new byte[MAX_BUFFER];
             int bytesRead = is.read(rep);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
                 return;
             }
-            //On s'occupe de [WELCO␣m␣h␣w␣f␣ip␣port***]
+            //On s'occupe de [WELCO m h w f ip port***]
             String action = new String(rep, 0, 5);
-            System.out.print(action);
+            if(verbeux) { System.out.print(action); }
             if (!action.equals("WELCO")) {
                 System.out.println(MESS_ERROR);
                 return;
@@ -397,16 +405,16 @@ public class Client {
             int nbGhosts = rep[14] & 0xff;
             String ipMultiDiff = new String(rep, 16, 15);
             String portMultiDiff = new String(rep, 32, 4);
-            System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
+            if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
                 + height + (new String(rep, 10, 1)) + width + (new String(rep, 13, 1))
                 + nbGhosts + (new String(rep, 15, 1)) + ipMultiDiff + (new String(rep, 31, 1))
-                + portMultiDiff + (new String(rep, 36, 3)));
+                + portMultiDiff + (new String(rep, 36, 3))); }
             System.out.println("\nBienvenue !\nLe labyrinthe a pour hauteur " + height
                 + ", pour largeur " + width + " et il y a " + nbGhosts + " fantomes a capturer !\nBONNE CHANCE\n");
             
-            //On s'occupe de [POSIT␣id␣x␣y***]
+            //On s'occupe de [POSIT id x y***]
             action = new String(rep, 39, 5);
-            System.out.print(action);
+            if(verbeux) { System.out.print(action); }
             if (!action.equals("POSIT")) {
                 System.out.println(MESS_ERROR);
                 return;
@@ -414,8 +422,8 @@ public class Client {
             String id = new String(rep, 45, 8);
             String posX = new String(rep, 54, 3);
             String posY = new String(rep, 58, 3);
-            System.out.println((new String(rep, 44, 1)) + id + (new String(rep, 53, 1)) + posX
-                + (new String(rep, 57, 1)) + posY + (new String(rep, 61, 3)));
+            if(verbeux) { System.out.println((new String(rep, 44, 1)) + id + (new String(rep, 53, 1)) + posX
+                + (new String(rep, 57, 1)) + posY + (new String(rep, 61, 3))); }
             System.out.println(id + ", vous etes en position (" + posX.replaceFirst("^0+(?!$)", "") + "," + posY.replaceFirst("^0+(?!$)", "") + ")");
 
             this.start = true;
@@ -429,16 +437,16 @@ public class Client {
 
     public void doCaseREGOKorREGNO(byte[] rep) {
         String action = new String(rep, 0, 5);
-        System.out.print(action);
+        if(verbeux) { System.out.print(action); }
         switch (action) {
             case "REGOK":
                 int numPartie = rep[6] & 0xff;
-                System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 3)));
+                if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 3))); }
                 System.out.println("Vous avez bien ete inscrit a la partie " + numPartie);
                 this.inscrit = true;
                 break;
             case "REGNO":
-                System.out.println(new String(rep, 5, 3));
+                if(verbeux) { System.out.println(new String(rep, 5, 3)); }
                 System.out.println("Erreur : inscription a cette partie impossible");
                 break;
             default:
@@ -450,17 +458,17 @@ public class Client {
     //gere la reception des reponses GAMES et OGAME et renvoie false s'il y a eu une erreur, true sinon
     public boolean doGAMESandOGAME(InputStream is, byte[] rep) throws IOException {
         String action = new String(rep, 0, 5);
-        System.out.print(action);
+        if(verbeux) { System.out.print(action); }
         if (!action.equals("GAMES")) {
             System.out.println(MESS_ERROR);
             return false;
         }
         int nbParties = rep[6] & 0xff;
-        System.out.println((new String(rep, 5, 1)) + nbParties + (new String(rep, 7, 3)));
+        if(verbeux) { System.out.println((new String(rep, 5, 1)) + nbParties + (new String(rep, 7, 3))); }
         if (nbParties == 0) { 
             System.out.println("Aucune partie en attente");
         }
-        //Reception des reponses [OGAME␣m␣s***]
+        //Reception des reponses [OGAME m s***]
         for (; nbParties != 0; nbParties--) {
             byte[] rep2 = new byte[12];
             int bytesRead = is.read(rep2);
@@ -469,16 +477,16 @@ public class Client {
                 return false;
             }
             action = new String(rep2, 0, 5);
-            System.out.print(action);
+            if(verbeux) { System.out.print(action); }
             if (!action.equals("OGAME")) {
                 System.out.println(MESS_ERROR);
                 return false;
             }
             int numPartie = rep2[6] & 0xff;
             int nbJoueurs = rep2[8] & 0xff;
-            System.out.println((new String(rep2, 5, 1)) + numPartie + (new String(rep2, 7, 1))
-                + nbJoueurs + (new String(rep2, 9, 3)));
-            System.out.print("Partie n°" + numPartie + " : ");
+            if(verbeux) { System.out.println((new String(rep2, 5, 1)) + numPartie + (new String(rep2, 7, 1))
+                + nbJoueurs + (new String(rep2, 9, 3))); }
+            System.out.print("Partie " + numPartie + " : ");
             System.out.println(nbJoueurs + " joueurs inscrits");
             // if(bytesRead == -1) { break; }
         }
@@ -556,7 +564,7 @@ public class Client {
         try {
             os.write(req);
             os.flush();
-            System.out.println(new String(req));
+            if(verbeux) { System.out.println(new String(req)); }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -578,6 +586,10 @@ public class Client {
 
     public void setInGame(boolean inG) {
         this.inGame = inG;
+    }
+
+    public boolean isVerbeux() {
+        return this.verbeux;
     }
 
     public int getPortUDP() {
