@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "game.h"
-#include "parser.h"
+#include "send.h"
 
 extern game ** game_list;
 
