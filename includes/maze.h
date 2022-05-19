@@ -4,13 +4,15 @@
 //Char - Murs
 #define CHARWALL 'X'
 
+#define X_DEFAULT 10
+#define Y_DEFAULT 10
+
 //Structure - Labyrinthe
 typedef struct maze{
     char ** maze;
     int lenX;
     int lenY;
     int ** ghosts;
-    //TODO: Liste avec position ds joueurs ici ?
 } maze;
 
 //Remplissage d'une structure maze avec un labyrinthe

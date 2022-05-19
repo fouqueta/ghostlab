@@ -14,7 +14,6 @@
 #include "game.h"
 #include "parser.h"
 
-//TODO: Changer la façon dont les parties sont stockées ?
 extern game ** game_list;
 
 //Verrou principal

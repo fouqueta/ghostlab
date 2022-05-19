@@ -15,7 +15,7 @@ void getAMaze(maze * laby){
         }
     }
     generatorMaze(laby->maze, visited, 0, 0, lenX, lenY);
-    //printMaze(laby->maze,lenX,lenY);
+    printMaze(laby->maze,lenX,lenY);
     //printMaze(visited,lenX,lenY);
     for(int i=0;i<lenX;i++){
         free(visited[i]);
@@ -142,12 +142,26 @@ void initGhosts(maze * laby, int nb_ghosts){
         laby->ghosts[i] = malloc(2* sizeof(int));
         laby->ghosts[i][0] = x;
         laby->ghosts[i][1] = y;
+        printf("Fantome %d x: %d y: %d\n", i, x, y);
     }
 }
 
-int checkGhost(maze *laby,int nb_ghosts, int x, int y){
+int checkGhost(maze *laby, int nb_ghosts, int x, int y){
     for(int i=0;i<nb_ghosts;i++){
         if(laby->ghosts[i][0] == x && laby->ghosts[i][1] == y){
+            int ** ghosts = malloc(sizeof(int *)*(nb_ghosts-1));
+            int k = 0;
+            for(int j=0;j<nb_ghosts;j++){
+                if(j!=i){
+                    ghosts[k] = malloc(2* sizeof(int));
+                    ghosts[k][0] = laby->ghosts[j][0];
+                    ghosts[k][1] = laby->ghosts[j][1];
+                    free(laby->ghosts[j]);
+                    k++;
+                }
+            }
+            free(laby->ghosts);
+            laby->ghosts = ghosts;
             return 1;
         }
     }

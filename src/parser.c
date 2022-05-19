@@ -282,7 +282,6 @@ int sendUnrok(int fd, int8_t m){
 }
 
 int sendStart(int fd, player * p){
-    //TODO: Envoyer WELCO + POSIT
     char * welco = "WELCO \0";
     int len_welco = strlen(welco);
     char * posit = "POSIT \0";

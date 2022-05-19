@@ -201,8 +201,6 @@ void* listen_player(void* args){
                     break;
                 }
             }else if(strncmp(action, "START", 5) == 0){
-                //TODO: Joueur prêt
-                //TODO: Lancer un thread qui va s'occuper de la partie
                 pthread_mutex_lock(&(player_infos->g->verrou_for_cond));
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 player_infos->g->nb_ready++;
@@ -258,6 +256,7 @@ void* listen_player(void* args){
                         res_move = move_player(player_infos, x-1, y);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
+                            player_infos->g->nb_ghosts--;
                         }
                     }
                 }
@@ -270,13 +269,14 @@ void* listen_player(void* args){
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;
                     int y = player_infos->y;
-                    if(x+1 > player_infos->g->laby->lenX || lab[x+1][y] == CHARWALL){
+                    if(x+1 >= player_infos->g->laby->lenX || lab[x+1][y] == CHARWALL){
                         break;
                     }
                     else {
                         res_move = move_player(player_infos, x+1, y);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
+                            player_infos->g->nb_ghosts--;
                         }
                     }
                 }
@@ -296,6 +296,7 @@ void* listen_player(void* args){
                         res_move = move_player(player_infos, x, y-1);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
+                            player_infos->g->nb_ghosts--;
                         }
                     }
                 }
@@ -308,13 +309,14 @@ void* listen_player(void* args){
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;
                     int y = player_infos->y;
-                    if(y+1 > player_infos->g->laby->lenY || lab[x][y+1] == CHARWALL){
+                    if(y+1 >= player_infos->g->laby->lenY || lab[x][y+1] == CHARWALL){
                         break;
                     }
                     else {
                         res_move = move_player(player_infos, x, y+1);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
+                            player_infos->g->nb_ghosts--;
                         }
                     }
                 }
@@ -326,6 +328,7 @@ void* listen_player(void* args){
                 if(sendQuit(sock) == -1){
                     break;
                 }
+                //TODO: le retirer de la partie ici ou plus bas
                 close(sock);
                 break;
             }else if(strncmp(action, "GLIS?", 5) == 0){
@@ -341,7 +344,7 @@ void* listen_player(void* args){
                 }
             }
         }else{
-            //Es-ce qu'il y a d'autres cas ?
+            //TODO: cas où la partie est finie state == 3!
             sendDunno(sock);
         }
 
