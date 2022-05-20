@@ -100,6 +100,9 @@ void* gameFunc(void* args){
                         printf("Fantome %d est maintenant en x: %d y: %d\n", i, x, y);
                         g->laby->ghosts[i][1] = y;
                         bool = 0;
+                        if(sendGhost(g, x, y) == -1){
+                            break;
+                        }
                     }
                     break;
                 case 1:
@@ -110,6 +113,9 @@ void* gameFunc(void* args){
                         printf("Fantome %d est maintenant en x: %d y: %d\n", i, x, y);
                         g->laby->ghosts[i][1] = y;
                         bool = 0;
+                        if(sendGhost(g, x, y) == -1){
+                            break;
+                        }
                     }
                     break;
                 case 2:
@@ -120,6 +126,9 @@ void* gameFunc(void* args){
                         printf("Fantome %d est maintenant en x: %d y: %d\n", i, x, y);
                         g->laby->ghosts[i][0] = x;
                         bool = 0;
+                        if(sendGhost(g, x, y) == -1){
+                            break;
+                        }
                     }
                     break;
                 case 3:
@@ -130,6 +139,9 @@ void* gameFunc(void* args){
                         printf("Fantome %d est maintenant en x: %d y: %d\n", i, x, y);
                         g->laby->ghosts[i][0] = x;
                         bool = 0;
+                        if(sendGhost(g, x, y) == -1){
+                            break;
+                        }
                     }
                     break;
                 default:
@@ -186,4 +198,28 @@ int not_use(char * port){
         }
     }
     return 1;
+}
+
+player *getWinner(game *g){
+    player_node *first = g->list.first;
+    int max = 0;
+    player *win;
+    uint8_t cpt = 0;
+    while(cpt < g->nb_players){
+        srand(time(NULL));
+        int rd;
+        if(first->p->score > max){
+            win = first->p;
+            max = first->p->score;
+        }
+        else if(first->p->score == max && max != 0){
+            rd = rand() % 2;
+            if(rd == 1){
+                win = first->p;
+            }
+        }
+        first = first->next;
+        cpt = cpt + 1;
+    }
+    return win;
 }

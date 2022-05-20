@@ -215,7 +215,7 @@ void* listen_player(void* args){
                 player_infos->g->nb_ready++;
                 if(player_infos->g->nb_ready == player_infos->g->nb_players) { //&& player_infos->g->nb_players > 1){
                     getAMaze(player_infos->g->laby);
-                    player_infos->g->nb_ghosts = 10;
+                    player_infos->g->nb_ghosts = 1; //TODO 10
                     initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
                     placePlayers(player_infos->g);
                     set_port(player_infos->g);
@@ -273,6 +273,11 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
+                pthread_mutex_lock(&(player_infos->verrou_player));
+                if(player_infos->g->nb_ghosts == 0){
+                    sendEnd(player_infos->g);
+                }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
             }else if(strncmp(action, "DOMOV", 5) == 0){
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
@@ -286,6 +291,9 @@ void* listen_player(void* args){
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
                             player_infos->g->nb_ghosts--;
+                            if(sendScore(player_infos) == -1){
+                                break;
+                            }
                         }
                     }
                 }
@@ -293,6 +301,11 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
+                pthread_mutex_lock(&(player_infos->verrou_player));
+                if(player_infos->g->nb_ghosts == 0){
+                    sendEnd(player_infos->g);
+                }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
             }else if(strncmp(action, "LEMOV", 5) == 0){
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
@@ -313,6 +326,11 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
+                pthread_mutex_lock(&(player_infos->verrou_player));
+                if(player_infos->g->nb_ghosts == 0){
+                    sendEnd(player_infos->g);
+                }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
             }else if(strncmp(action, "RIMOV", 5) == 0){
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
@@ -333,12 +351,18 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
+                pthread_mutex_lock(&(player_infos->verrou_player));
+                if(player_infos->g->nb_ghosts == 0){
+                    sendEnd(player_infos->g);
+                }
+                pthread_mutex_unlock(&(player_infos->verrou_player));
             }else if(strncmp(action, "IQUIT", 5) == 0){
                 if(sendQuit(sock) == -1){
                     break;
                 }
-                //TODO: le retirer de la partie ici ou plus bas
-                close(sock);
+                int8_t id_g = player_infos->g->id_game;
+                remove_player_game(player_infos, id_g);
+                player_infos = NULL;
                 break;
             }else if(strncmp(action, "GLIS?", 5) == 0){
                 //Liste des joueurs dans la partie du joueur
@@ -346,7 +370,16 @@ void* listen_player(void* args){
                     break;
                 }
             }else if(strncmp(action, "MALL?", 5) == 0) {
-                //TODO: Envoye un message à tout les autres joueurs
+                char buff_tmp[200];
+                memcpy(buff_tmp, message+6, 200);
+                int size_tmp = strlen(buff_tmp);
+                char *mess = malloc(size_tmp-2);
+                memcpy(mess, buff_tmp, size_tmp-3);
+                mess[strlen(mess)] = '\0';
+
+                if(sendMessAll(sock, player_infos, mess) == -1){
+                    break;
+                }
             }else if(strncmp(action, "SEND?", 5) == 0){
                 char id[8];
                 memcpy(id, message+6, 8);
@@ -380,8 +413,8 @@ void* listen_player(void* args){
         free(buff_tmp);
     }
     /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
-    Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/
-    printf("Sorti\n");
+    Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est finie*/
+    printf("Sortie\n");
     free(message);
     close(sock);
 

@@ -45,3 +45,5 @@ void placePlayers(game * g);
 void set_port(game * g);
 
 int not_use(char * port);
+
+player *getWinner(game *g);
