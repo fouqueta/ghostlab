@@ -26,7 +26,7 @@ public class Client {
             System.exit(0);
         }
         
-        //rTODO: entrer ip en argument
+        //TODO: entrer ip en argument
         
         Client client = new Client();
         client.portTCP = Integer.parseInt(args[0]);
@@ -46,12 +46,12 @@ public class Client {
             if (bytesRead < 1) {
                 client.close(fdSock, is, os, client.scanner);
             }
-            if (!client.doGAMESandOGAME(is, client.rep)) { //S'il y a eu une erreur
+            if (!client.doGAMESandOGAME(is)) { //S'il y a eu une erreur
                 client.close(fdSock, is, os, client.scanner);
             }
             client.bufferSize -= client.lenMessage;
             byte[] repTmp = Arrays.copyOfRange(client.rep, client.lenMessage, client.bufferSize+client.lenMessage);
-            client.rep = recupNextRep(repTmp);
+            client.rep = client.recupNextRep(repTmp);
 
             //On gere les actions possibles avant une partie
             client.doPreGameActions(is, os);
@@ -180,14 +180,12 @@ public class Client {
             writeReq(os, req);
 
             //Reception de la reponse [REGOK m***] ou [REGNO***]
-            // byte[] rep = new byte[MAX_BUFFER];
-            //int bytesRead = is.read(rep);
             int bytesRead = readRep(is);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
                 return;
             }
-            doCaseREGOKorREGNO(rep);
+            doCaseREGOKorREGNO();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -223,7 +221,7 @@ public class Client {
                 System.out.println(MESS_ERROR);
                 return;
             }
-            doCaseREGOKorREGNO(rep);
+            doCaseREGOKorREGNO();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -362,7 +360,6 @@ public class Client {
                             repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
                             rep = recupNextRep(repTmp);
                         }
-                        // if(bytesRead == -1) { break; }
                     }
                     break;
                 case "DUNNO":
@@ -391,7 +388,7 @@ public class Client {
                 System.out.println(MESS_ERROR);
                 return;
             }
-            doGAMESandOGAME(is, rep);
+            doGAMESandOGAME(is);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -453,7 +450,7 @@ public class Client {
         }
     }
 
-    public void doCaseREGOKorREGNO(byte[] rep) {
+    public void doCaseREGOKorREGNO() {
         String action = new String(rep, 0, 5);
         if(verbeux) { System.out.print(action); }
         switch (action) {
@@ -474,22 +471,22 @@ public class Client {
     }
 
     //gere la reception des reponses GAMES et OGAME et renvoie false s'il y a eu une erreur, true sinon
-    public boolean doGAMESandOGAME(InputStream is, byte[] rep) throws IOException {
-        String action = new String(rep, 0, 5);
+    public boolean doGAMESandOGAME(InputStream is) throws IOException {
+        String action = new String(this.rep, 0, 5);
         if(verbeux) { System.out.print(action); }
         if (!action.equals("GAMES")) {
             System.out.println(MESS_ERROR);
             return false;
         }
-        int nbParties = rep[6] & 0xff;
-        if(verbeux) { System.out.println((new String(rep, 5, 1)) + nbParties + (new String(rep, 7, 3))); }
+        int nbParties = this.rep[6] & 0xff;
+        if(verbeux) { System.out.println((new String(this.rep, 5, 1)) + nbParties + (new String(this.rep, 7, 3))); }
         if (nbParties == 0) { 
             System.out.println("Aucune partie en attente");
             return true;
         }
         bufferSize -= lenMessage;
-        byte[] repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
-        rep = recupNextRep(repTmp);
+        byte[] repTmp = Arrays.copyOfRange(this.rep, lenMessage, bufferSize+lenMessage);
+        this.rep = recupNextRep(repTmp);
 
         //Reception des reponses [OGAME m s***]
         for (; nbParties != 0; nbParties--) {
@@ -498,24 +495,23 @@ public class Client {
                 System.out.println(MESS_ERROR);
                 return false;
             }
-            action = new String(rep, 0, 5);
+            action = new String(this.rep, 0, 5);
             if(verbeux) { System.out.print(action); }
             if (!action.equals("OGAME")) {
                 System.out.println(MESS_ERROR);
                 return false;
             }
-            int numPartie = rep[6] & 0xff;
-            int nbJoueurs = rep[8] & 0xff;
-            if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
-                + nbJoueurs + (new String(rep, 9, 3))); }
+            int numPartie = this.rep[6] & 0xff;
+            int nbJoueurs = this.rep[8] & 0xff;
+            if(verbeux) { System.out.println((new String(this.rep, 5, 1)) + numPartie + (new String(this.rep, 7, 1))
+                + nbJoueurs + (new String(this.rep, 9, 3))); }
             System.out.print("Partie " + numPartie + " : ");
             System.out.println(nbJoueurs + " joueurs inscrits");
             if (nbParties != 1) { 
                 bufferSize -= lenMessage;
-                repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
-                rep = recupNextRep(repTmp); 
+                repTmp = Arrays.copyOfRange(this.rep, lenMessage, bufferSize+lenMessage);
+                this.rep = recupNextRep(repTmp); 
             }
-            // if(bytesRead == -1) { break; }
         }
         return true;  
     }
@@ -578,9 +574,6 @@ public class Client {
     }
 
     public int readRep(InputStream is) throws IOException {
-        System.out.println("\nAVANT READ REP\nlongueur de rep : " + this.rep.length);
-            System.out.println("lenMessage : " + this.lenMessage);
-            System.out.println("bufferSize : " + this.bufferSize);
         while (true) {
             int tmp = containsStars(rep, bufferSize);
             if(tmp != -1) {
@@ -589,21 +582,14 @@ public class Client {
             }
             bufferSize += is.read(rep, bufferSize, MAX_BUFFER-bufferSize);
             if (bufferSize < 1) {
-                // System.out.println(MESS_ERROR);
                 return 0;
             }
-            System.out.println("\nPRENDANT READ REP" + tmp + "\nlongueur de rep : " + this.rep.length);
-            System.out.println("lenMessage : " + this.lenMessage);
-            System.out.println("bufferSize : " + this.bufferSize);
         }
-        System.out.println("\nAPRES READ REP\nlongueur de rep : " + this.rep.length);
-            System.out.println("lenMessage : " + this.lenMessage);
-            System.out.println("bufferSize : " + this.bufferSize);
         return 1;
     }
 
 
-    public int containsStars(byte[] buff, int len) {
+    public static int containsStars(byte[] buff, int len) {
         for (int i = 0; i < len-2; i++){
             if(buff[i]==buff[i+1] && buff[i+1]==buff[i+2] && buff[i]=='*'){
                 return i+3;

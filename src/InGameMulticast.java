@@ -22,6 +22,11 @@ public class InGameMulticast implements Runnable {
                 byte[] rep = new byte[MAX_BUFFER];
                 DatagramPacket dpacket = new DatagramPacket(rep, rep.length);
                 mso.receive(dpacket);
+                String strRep = new String(dpacket.getData(), 0, dpacket.getLength());
+                if (!strRep.endsWith("+++")) {
+                    System.out.println("Erreur : message recu incorrect");
+                    break;
+                }
                 String action = new String(dpacket.getData(), 0, 6);
                 if(client.isVerbeux()) { System.out.print(action); }
                 switch (action) {
