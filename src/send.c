@@ -35,7 +35,7 @@ int sendGames(int fd){
             len = 0;
             memmove(message+len, ogame, strlen(ogame)); len += strlen(ogame);
             memmove(message+len, &idgame, sizeof(idgame)); len += sizeof(idgame);
-            memmove(message+len, " ", strlen(" ")); len += strlen(" ");
+            memmove(message+len, " ", 1); len += 1;
             memmove(message+len, &nbJoueurs, sizeof(nbJoueurs)); len += sizeof(nbJoueurs);
             memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
@@ -88,6 +88,7 @@ int sendGList(int fd, game * g){
         if(p==NULL){
             return -1;
         }
+        pthread_mutex_lock(&(p->verrou_player));
         char id[8]; memset(id,0,8); memmove(id, p->name, 8);
 
         char x[4];
@@ -121,16 +122,20 @@ int sendGList(int fd, game * g){
             snprintf(s, 128, "000%d", p->score);
         }
         s[4] = '\0';
-
-        int len = 3 + len_gplyr + 8 + strlen(s) + strlen(y) + strlen(x);
+        pthread_mutex_unlock(&(p->verrou_player));
+        int len = strlen(stars) + len_gplyr + 8 + strlen(s) + strlen(y) + strlen(x) + 3;
 
         char * message = malloc(len);
         memset(message, 0, len);
         len = 0;
 
         memmove(message+len, gplyr, len_gplyr); len += len_gplyr;
+        memmove(message+len, id, 8); len += 8;
+        memmove(message+len, " ", 1); len += 1;
         memmove(message+len, x, strlen(x)); len += strlen(x);
+        memmove(message+len, " ", 1); len += 1;
         memmove(message+len, y, strlen(y)); len += strlen(y);
+        memmove(message+len, " ", 1); len += 1;
         memmove(message+len, s, strlen(s)); len += strlen(s);
         memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
@@ -166,9 +171,9 @@ int sendSize(int fd, game * g){
     len = 0;
     memmove(message+len, size, strlen(size)); len += strlen(size);
     memmove(message+len, &m, sizeof(uint8_t)); len += sizeof(uint8_t);
-    memmove(message+len, " ", sizeof(uint8_t)); len += 1;
+    memmove(message+len, " ", 1); len += 1;
     memmove(message+len, &h, sizeof(uint16_t)); len += sizeof(uint16_t);
-    memmove(message+len, " ", sizeof(uint8_t)); len += 1;
+    memmove(message+len, " ", 1); len += 1;
     memmove(message+len, &w, sizeof(uint16_t)); len += sizeof(uint16_t);
     memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
@@ -197,7 +202,7 @@ int sendList(int fd, game * g){
     len = 0;
     memmove(message+len, list, strlen(list)); len += strlen(list);
     memmove(message+len, &m, sizeof(uint8_t)); len += sizeof(uint8_t);
-    memmove(message+len, " ", sizeof(uint8_t)); len += 1;
+    memmove(message+len, " ", 1); len += 1;
     memmove(message+len, &s, sizeof(uint8_t)); len += sizeof(uint8_t);
     memmove(message+len, stars, strlen(stars)); len += strlen(stars);
 
@@ -209,7 +214,7 @@ int sendList(int fd, game * g){
         return -1;
     }
 
-    len = strlen(playr) + strlen(stars) + 9;
+    len = strlen(playr) + strlen(stars) + 8;
 
     for(int i=0;i<s;i++){
         char * message_player = malloc(len);
@@ -277,7 +282,6 @@ int sendUnrok(int fd, int8_t m){
 }
 
 int sendStart(int fd, player * p){
-    //TODO: Envoyer WELCO + POSIT
     char * welco = "WELCO \0";
     int len_welco = strlen(welco);
     char * posit = "POSIT \0";
@@ -365,7 +369,7 @@ int sendMove(int fd, player *p, int ghost){
         int len = len_movef + len_stars + 3*2 + 3 + 4;
         char *message = malloc(len);
         len = 0;
-
+        pthread_mutex_lock(&(p->verrou_player));
         char x[4];
         if(p->x>99){
             snprintf(x, 128, "%d", p->x);
@@ -387,7 +391,7 @@ int sendMove(int fd, player *p, int ghost){
         y[3] = '\0';
 
         char sc[5];
-        p->score = p->score + ghost;
+        //p->score = p->score + ghost;
         if(p->score > 999){
             snprintf(sc, 128, "%d", p->score);
         }
@@ -401,6 +405,7 @@ int sendMove(int fd, player *p, int ghost){
             snprintf(sc, 128, "000%d", p->score);
         }
         sc[4] = '\0';
+        pthread_mutex_unlock(&(p->verrou_player));
 
         memmove(message + len, movef, len_movef); len += len_movef;
         memmove(message + len, x, 3); len += 3;
@@ -426,6 +431,7 @@ int sendMove(int fd, player *p, int ghost){
         char *message = malloc(len);
         len = 0;
 
+        pthread_mutex_lock(&(p->verrou_player));
         char x[4];
         if(p->x>99){
             snprintf(x, 128, "%d", p->x);
@@ -445,6 +451,7 @@ int sendMove(int fd, player *p, int ghost){
             snprintf(y, 128, "00%d", p->y);
         }
         y[3] = '\0';
+        pthread_mutex_unlock(&(p->verrou_player));
 
         memmove(message + len, move, len_move); len += len_move;
         memmove(message + len, x, 3); len += 3;
@@ -467,6 +474,336 @@ int sendQuit(int fd){
     int count = send(fd, bye, len_bye, 0);
     if(count == -1){
         return -1;
+    }
+    return 0;
+}
+
+int sendMess(int fd, player *prov, char id_dest[8], char *message){
+    int count;
+    player_node *first = prov->g->list.first;
+    player *dest = get_player_fromName(first, id_dest);
+
+    if(dest != NULL){
+        int fd_udp = socket(PF_INET, SOCK_DGRAM, 0);
+        struct addrinfo *result;
+        struct addrinfo hints = {
+            .ai_family = AF_INET,
+            .ai_socktype = SOCK_DGRAM
+        };
+        memset(&hints, 0, sizeof(struct addrinfo));
+
+        //TODO: ip du joueur destinataire
+        int annuaire = getaddrinfo("127.0.0.1", dest->port, &hints, &result);
+        if(annuaire == 0 && result != NULL){
+            char *id_prov = prov->name;
+            char *messp = "MESSP \0";
+            int len_messp = strlen(messp);
+            char *plus = "+++\0";
+            int len_plus = strlen(plus);
+            int len = len_messp + len_plus + 8 + strlen(message) + 1;
+
+            char *mess_UDP = malloc(len);
+            len = 0;
+            memmove(mess_UDP + len, messp, len_messp); len += len_messp;
+            memmove(mess_UDP + len, id_prov, 8); len += 8;
+            memmove(mess_UDP + len, " ", 1); len += 1;
+            memmove(mess_UDP + len, message, strlen(message)); len += strlen(message);
+            memmove(mess_UDP + len, plus, len_plus); len += len_plus;
+
+            struct sockaddr *addr = result->ai_addr;
+            count = sendto(fd_udp, mess_UDP, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+
+            freeaddrinfo(result);
+            free(mess_UDP);
+            if(count == -1){
+                return -1;
+            }
+        
+            char *psend = "SEND!***\0";
+            int len_send = strlen(psend);
+            count = send(fd, psend, len_send, 0);
+            if(count == -1){
+                return -1;
+            }
+            close(fd_udp);
+            return 0;
+        }
+        else {
+            freeaddrinfo(result);
+        }
+    }
+    char *nsend = "NSEND***\0";
+    int len_nsend = strlen(nsend);
+    count = send(fd, nsend, len_nsend, 0);
+    if(count == -1){
+        return -1;
+    
+    }
+    return 0;
+}
+
+
+int sendMessAll(int fd, player *prov, char *message){
+    int count;
+    int fd_multi = socket(PF_INET, SOCK_DGRAM, 0);
+    struct addrinfo *result;
+    struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_DGRAM
+    };
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    int annuaire = getaddrinfo(prov->g->ip, prov->g->port, &hints, &result);
+    if(annuaire == 0 && result != NULL){
+        char *id_prov = prov->name;
+        char *messa = "MESSA \0";
+        int len_messa = strlen(messa);
+        char *plus = "+++\0";
+        int len_plus = strlen(plus);
+        int len = len_messa + len_plus + 8 + strlen(message) + 1;
+
+        char *mess_ALL = malloc(len);
+        len = 0;
+        memmove(mess_ALL + len, messa, len_messa); len += len_messa;
+        memmove(mess_ALL + len, id_prov, 8); len += 8;
+        memmove(mess_ALL + len, " ", 1); len += 1;
+        memmove(mess_ALL + len, message, strlen(message)); len += strlen(message);
+        memmove(mess_ALL + len, plus, len_plus); len += len_plus;
+
+        struct sockaddr *addr = result->ai_addr;
+        count = sendto(fd_multi, mess_ALL, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+
+        freeaddrinfo(result);
+        free(mess_ALL);
+        if(count == -1){
+            return -1;
+        }
+        
+        char *mall = "MALL!***\0";
+        int len_mall = strlen(mall);
+        count = send(fd, mall, len_mall, 0);
+        if(count == -1){
+            return -1;
+        }
+        close(fd_multi);
+        return 0;
+    }
+    else {
+        freeaddrinfo(result);
+        return -1;
+    }
+    return 0;
+}
+
+int sendGhost(game *g, int g_x, int g_y){
+    int count;
+    int fd_multi = socket(PF_INET, SOCK_DGRAM, 0);
+    struct addrinfo *result;
+    struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_DGRAM
+    };
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    int annuaire = getaddrinfo(g->ip, g->port, &hints, &result);
+    if(annuaire == 0 && result != NULL){
+        char *ghost = "GHOST \0";
+        int len_ghost = strlen(ghost);
+        char *plus = "+++\0";
+        int len_plus = strlen(plus);
+        int len = len_ghost + len_plus + 2*3 + 1;
+
+        char x[4];
+        if(g_x > 99){
+            snprintf(x, 128, "%d", g_x);
+        }
+        else if(g_x > 9){
+            snprintf(x, 128, "0%d", g_x);
+        }
+        else{
+            snprintf(x, 128, "00%d", g_x);
+        }
+        x[3] = '\0';
+
+        char y[4];
+        if(g_y > 99){
+            snprintf(y, 128, "%d", g_y);
+        }
+        else if(g_y > 9){
+            snprintf(y, 128, "0%d", g_y);
+        }
+        else{
+            snprintf(y, 128, "00%d", g_y);
+        }
+        y[3] = '\0';
+
+        char *message = malloc(len);
+        len = 0;
+        memmove(message + len, ghost, len_ghost); len += len_ghost;
+        memmove(message + len, x, 3); len += 3;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, y, 3); len += 3;
+        memmove(message + len, plus, len_plus); len += len_plus;
+
+        struct sockaddr *addr = result->ai_addr;
+        count = sendto(fd_multi, message, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+
+        freeaddrinfo(result);
+        free(message);
+        if(count == -1){
+            return -1;
+        }
+        close(fd_multi);
+        return 0;
+    }
+    else {
+        freeaddrinfo(result);
+    }
+    return 0;
+}
+
+
+int sendScore(player *p){
+    int count;
+    int fd_multi = socket(PF_INET, SOCK_DGRAM, 0);
+    struct addrinfo *result;
+    struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_DGRAM
+    };
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    int annuaire = getaddrinfo(p->g->ip, p->g->port, &hints, &result);
+    if(annuaire == 0 && result != NULL){
+        char *score = "SCORE \0";
+        int len_score = strlen(score);
+        char *plus = "+++\0";
+        int len_plus = strlen(plus);
+        int len = len_score + len_plus + 8 + 2*3 + 4 + 3;
+
+        char x[4];
+        if(p->x > 99){
+            snprintf(x, 128, "%d", p->x);
+        }
+        else if(p->x > 9){
+            snprintf(x, 128, "0%d", p->x);
+        }
+        else{
+            snprintf(x, 128, "00%d", p->x);
+        }
+        x[3] = '\0';
+
+        char y[4];
+        if(p->y > 99){
+            snprintf(y, 128, "%d", p->y);
+        }
+        else if(p->y > 9){
+            snprintf(y, 128, "0%d", p->y);
+        }
+        else{
+            snprintf(y, 128, "00%d", p->y);
+        }
+        y[3] = '\0';
+
+        char sc[5];
+        if(p->score > 999){
+            snprintf(sc, 128, "%d", p->score);
+        }
+        else if(p->score > 99){
+            snprintf(sc, 128, "0%d", p->score);
+        }
+        else if(p->score > 9){
+            snprintf(sc, 128, "00%d", p->score);
+        }
+        else{
+            snprintf(sc, 128, "000%d", p->score);
+        }
+        sc[4] = '\0';
+
+        char *message = malloc(len);
+        len = 0;
+        memmove(message + len, score, len_score); len += len_score;
+        memmove(message + len, p->name, 8); len += 8;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, sc, 4); len += 4;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, x, 3); len += 3;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, y, 3); len += 3;
+        memmove(message + len, plus, len_plus); len += len_plus;
+
+        struct sockaddr *addr = result->ai_addr;
+        count = sendto(fd_multi, message, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+
+        freeaddrinfo(result);
+        free(message);
+        if(count == -1){
+            return -1;
+        }
+        close(fd_multi);
+        return 0;
+    }
+    else {
+        freeaddrinfo(result);
+    }
+    return 0;
+}
+
+int sendEnd(game *g){
+    int count;
+    int fd_multi = socket(PF_INET, SOCK_DGRAM, 0);
+    struct addrinfo *result;
+    struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_DGRAM
+    };
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    int annuaire = getaddrinfo(g->ip, g->port, &hints, &result);
+    if(annuaire == 0 && result != NULL){
+        player *p = getWinner(g);
+        char *end = "ENDGA \0";
+        int len_end = strlen(end);
+        char *plus = "+++\0";
+        int len_plus = strlen(plus);
+        int len = len_end + len_plus + 8 + 4 + 1;
+
+        char sc[5];
+        if(p->score > 999){
+            snprintf(sc, 128, "%d", p->score);
+        }
+        else if(p->score > 99){
+            snprintf(sc, 128, "0%d", p->score);
+        }
+        else if(p->score > 9){
+            snprintf(sc, 128, "00%d", p->score);
+        }
+        else{
+            snprintf(sc, 128, "000%d", p->score);
+        }
+        sc[4] = '\0';
+
+        char *message = malloc(len);
+        len = 0;
+        memmove(message + len, end, len_end); len += len_end;
+        memmove(message + len, p->name, 8); len += 8;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, sc, 4); len += 4;
+        memmove(message + len, plus, len_plus); len += len_plus;
+
+        struct sockaddr *addr = result->ai_addr;
+        count = sendto(fd_multi, message, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+
+        freeaddrinfo(result);
+        free(message);
+        if(count == -1){
+            return -1;
+        }
+        close(fd_multi);
+        return 0;
+    }
+    else {
+        freeaddrinfo(result);
     }
     return 0;
 }

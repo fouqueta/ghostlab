@@ -10,11 +10,11 @@
 #include <pthread.h>
 #include <endian.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include "game.h"
-#include "parser.h"
+#include "send.h"
 
-//TODO: Changer la façon dont les parties sont stockées ?
 extern game ** game_list;
 
 //Verrou principal

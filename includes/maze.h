@@ -4,13 +4,19 @@
 //Char - Murs
 #define CHARWALL 'X'
 
+/*
+#define X_DEFAULT 10
+#define Y_DEFAULT 10
+*/
+#define X_DEFAULT 5
+#define Y_DEFAULT 5
+
 //Structure - Labyrinthe
 typedef struct maze{
     char ** maze;
     int lenX;
     int lenY;
     int ** ghosts;
-    //TODO: Liste avec position ds joueurs ici ?
 } maze;
 
 //Remplissage d'une structure maze avec un labyrinthe
@@ -27,4 +33,4 @@ void initGhosts(maze * laby, int nb_ghosts);
 
 //Verifie si un fantome se trouve sur une position donnee.
 //Renvoie 1 si un fantome s'y trouve, 0 sinon.
-int checkGhost(maze *laby, int x, int y);
+int checkGhost(maze * laby, int nb_ghosts, int x, int y);
