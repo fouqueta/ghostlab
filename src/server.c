@@ -348,7 +348,6 @@ void* listen_player(void* args){
             }else if(strncmp(action, "MALL?", 5) == 0) {
                 //TODO: Envoye un message à tout les autres joueurs
             }else if(strncmp(action, "SEND?", 5) == 0){
-                //TODO: Envoyer un message à un seul joueur
                 char id[8];
                 memcpy(id, message+6, 8);
                 char buff_tmp[200];
