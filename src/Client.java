@@ -426,21 +426,30 @@ public class Client {
                 + portMultiDiff + (new String(rep, 36, 3))); }
             System.out.println("\nBienvenue !\nLe labyrinthe a pour hauteur " + height
                 + ", pour largeur " + width + " et il y a " + nbGhosts + " fantomes a capturer !\nBONNE CHANCE\n");
+            bufferSize -= lenMessage;
+            byte[] repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
+            rep = recupNextRep(repTmp);
             
             //On s'occupe de [POSIT id x y***]
-            action = new String(rep, 39, 5);
+            int bytesRead2 = readRep(is);
+            if (bytesRead2 < 1) {
+                System.out.println(MESS_ERROR);
+                return;
+            }
+            action = new String(rep, 0, 5);
             if(verbeux) { System.out.print(action); }
             if (!action.equals("POSIT")) {
                 System.out.println(MESS_ERROR);
                 return;
             }
-            String id = new String(rep, 45, 8);
-            String posX = new String(rep, 54, 3);
-            String posY = new String(rep, 58, 3);
-            if(verbeux) { System.out.println((new String(rep, 44, 1)) + id + (new String(rep, 53, 1)) + posX
-                + (new String(rep, 57, 1)) + posY + (new String(rep, 61, 3))); }
-            System.out.println(id + ", vous etes en position (" + posX.replaceFirst("^0+(?!$)", "") + "," + posY.replaceFirst("^0+(?!$)", "") + ")");
-
+            String id = new String(rep, 6, 8); //45
+            String posX = new String(rep, 15, 3); //54
+            String posY = new String(rep, 19, 3); //58
+            System.out.println((new String(rep, 5, 1)) + id + (new String(rep, 14, 1)) + posX
+                + (new String(rep, 18, 1)) + posY + (new String(rep, 22, 3)));
+            System.out.println(id + ", vous etes en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 
+                + posY.replaceFirst("^0+(?!$)", "") + ")");
+                
             this.start = true;
             this.inGame = true;
             this.ipMult = ipMultiDiff.replace("#", "");

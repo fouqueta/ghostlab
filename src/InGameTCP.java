@@ -64,15 +64,15 @@ public class InGameTCP implements Runnable {
                     System.out.println("Mauvaise commande");
                     break;
                 }
-                System.out.println("AVANT bRep : " + new String(bRep));
-                System.out.println("AVANT bufSize : " + bufSize);
-                System.out.println("AVANT lenMess : " + lenMess);
+                // System.out.println("AVANT bRep : " + new String(bRep));
+                // System.out.println("AVANT bufSize : " + bufSize);
+                // System.out.println("AVANT lenMess : " + lenMess);
                 bufSize -= lenMess;
                 byte[] repTmp = Arrays.copyOfRange(this.bRep, lenMess, bufSize+lenMess);
                 this.bRep = Client.recupNextRep(repTmp);
-                System.out.println("APRES bRep : " + new String(bRep));
-                System.out.println("APRES bufSize : " + bufSize);
-                System.out.println("APRES lenMess : " + lenMess);
+                // System.out.println("APRES bRep : " + new String(bRep));
+                // System.out.println("APRES bufSize : " + bufSize);
+                // System.out.println("APRES lenMess : " + lenMess);
                 synchronized(client) { 
                     this.inGame = client.isInGame(); 
                 }
