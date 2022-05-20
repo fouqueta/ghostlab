@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <endian.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include "game.h"
 #include "send.h"

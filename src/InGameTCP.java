@@ -35,22 +35,21 @@ public class InGameTCP implements Runnable {
                 
                 String action = scanner.nextLine();
                 System.out.println("Vous avez saisi l'action : " + action);
-                switch (action) {
-                    case "1":
-                        inGameActionGLIS(is, os);
-                        break;
-                    case "2":
-                        inGameActionSEND(is, os);
-                        break;
-                    case "3":
-                        inGameActionMALL(is, os);
-                        break;
-                    case "4":
-                        inGameActionIQUIT(is, os);
-                        break;
+                if (action.equals("1")){
+                    inGameActionGLIS(is, os);
                 }
-                if ((action.length()>1 && action.length()<=4) &&
-                    (action.charAt(0)=='D' || action.charAt(0)=='G' || action.charAt(0)=='H' || action.charAt(0)=='B')) {
+                else if (action.equals("2")){
+                    inGameActionSEND(is, os);
+                }
+                else if (action.equals("3")){
+                    inGameActionMALL(is, os);
+                }
+                else if (action.equals("4")){
+                    inGameActionIQUIT(is, os);
+                }
+                else if ((action.length()>1 && action.length()<=4) &&
+                    (action.charAt(0)=='D' || action.charAt(0)=='G' || 
+                    action.charAt(0)=='H' || action.charAt(0)=='B')) {
                     if (!action.substring(1).chars().allMatch(Character::isDigit)) {
                         System.out.println("Nombre de cases invalide");
                         break;

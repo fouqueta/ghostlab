@@ -477,3 +477,138 @@ int sendQuit(int fd){
     }
     return 0;
 }
+
+int sendMess(int fd, player *prov, char id_dest[8], char *message){
+    int count;
+    player_node *first = prov->g->list.first;
+    player *dest = get_player_fromName(first, id_dest);
+    
+    if(dest != NULL){
+        char *psend = "SEND!***\0";
+        int len_send = strlen(psend);
+        count = send(fd, psend, len_send, 0);
+        if(count == -1){
+            return -1;
+        }
+
+        char *id_prov = prov->name;
+        char *messp = "MESSP \0";
+        int len_messp = strlen(messp);
+        char *plus = "+++\0";
+        int len_plus = strlen(plus);
+        int len = len_messp + len_plus + strlen(id_prov) + strlen(message) + 1;
+
+        char *mess_UDP = malloc(len);
+        len = 0;
+        memmove(mess_UDP + len, messp, len_messp); len += len_messp;
+        memmove(mess_UDP + len, id_prov, strlen(id_prov)); len += strlen(id_prov);
+        memmove(mess_UDP + len, " ", 1); len += 1;
+        memmove(mess_UDP + len, message, strlen(message)); len += strlen(message);
+        memmove(mess_UDP + len, plus, len_plus); len += len_plus;
+        
+        struct addrinfo *result;
+        struct addrinfo hints;
+        memset(&hints, 0, sizeof(struct addrinfo));
+
+        //TODO: ip du joueur destinataire
+        int annuaire = getaddrinfo("127.0.0.1", dest->port, &hints, &result);
+        if(annuaire == 0 && result != NULL){
+            struct sockaddr *addr = result->ai_addr;
+            count = sendto(fd, mess_UDP, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+        }
+        else {
+            char *nsend = "NSEND***\0";
+            int len_nsend = strlen(nsend);
+            count = send(fd, nsend, len_nsend, 0);
+            if(count == -1){
+                return -1;
+            }
+        }
+
+        freeaddrinfo(result);
+        free(mess_UDP);
+        if(count == -1){
+            return -1;
+        }
+    }
+    else{
+        char *nsend = "NSEND***\0";
+        int len_nsend = strlen(nsend);
+        count = send(fd, nsend, len_nsend, 0);
+        if(count == -1){
+            return -1;
+        }
+    }
+    return 0;
+}
+
+/*
+int sendMess(int fd, player *prov, char id_dest[8], char *message){
+    int count;
+    player_node *first = prov->g->list.first;
+    player *dest = get_player_fromName(first, id_dest);
+    if(dest != NULL){
+        char *psend = "SEND!***\0";
+        int len_send = strlen(psend);
+        count = send(fd, psend, len_send, 0);
+        if(count == -1){
+            return -1;
+        }
+
+        char *id_prov = prov->name;
+        char *messp = "MESSP \0";
+        int len_messp = strlen(messp);
+        char *plus = "+++\0";
+        int len_plus = strlen(plus);
+        int len = len_messp + len_plus + strlen(id_prov) + strlen(message) + 1;
+
+        char *mess_UDP = malloc(len);
+        len = 0;
+        memmove(mess_UDP + len, messp, len_messp); len += len_messp;
+        memmove(mess_UDP + len, id_prov, strlen(id_prov)); len += strlen(id_prov);
+        memmove(mess_UDP + len, " ", 1); len += 1;
+        memmove(mess_UDP + len, message, strlen(message)); len += strlen(message);
+        memmove(mess_UDP + len, plus, len_plus); len += len_plus;
+        
+        struct addrinfo *result;
+        struct addrinfo hints;
+        memset(&hints, 0, sizeof(struct addrinfo));
+
+        //TODO: ip du joueur destinataire
+        int annuaire = getaddrinfo("127.0.0.1", dest->port, &hints, &result);
+        if(annuaire == 0 && result != NULL){
+            struct sockaddr *addr = result->ai_addr;
+            count = sendto(fd, mess_UDP, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+        }
+        else {
+            char *nsend = "NSEND***\0";
+            int len_nsend = strlen(nsend);
+            count = send(fd, nsend, len_nsend, 0);
+            if(count == -1){
+                return -1;
+            }
+        }
+
+        freeaddrinfo(result);
+        free(mess_UDP);
+        if(count == -1){
+            return -1;
+        }
+    }
+    else{
+        char *nsend = "NSEND***\0";
+        int len_nsend = strlen(nsend);
+        count = send(fd, nsend, len_nsend, 0);
+        if(count == -1){
+            return -1;
+        }
+    }
+    return 0;
+}
+*/
+
+/*
+int sendMessAll(){
+
+}
+*/

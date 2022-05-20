@@ -1,5 +1,10 @@
 #include "../includes/server.h"
 
+typedef struct thread_args {
+    int fd;
+    char *ip;
+} thread_args;
+
 game ** game_list;
 
 pthread_mutex_t verrou_main = PTHREAD_MUTEX_INITIALIZER;
@@ -42,7 +47,6 @@ int main(int argc, char ** argv) {
     //Boucle principale du serveur
     while(1) {
         int * sock_player = malloc(sizeof(int));
-
         struct sockaddr_in c;
         socklen_t size = sizeof(c);
         *sock_player = accept(sock_server, (struct sockaddr *)&c, &size);
@@ -50,10 +54,13 @@ int main(int argc, char ** argv) {
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        pthread_t th;
-        pthread_create(&th, NULL, listen_player, sock_player);
-    }
+        thread_args *th_args = malloc(sizeof(thread_args)); //TODO: free
+        th_args->fd = *sock_player;
+        th_args->ip = inet_ntoa(c.sin_addr);
 
+        pthread_t th;
+        pthread_create(&th, NULL, listen_player, th_args);
+    }
     close(sock_server);
     return 0;
 }
@@ -75,7 +82,9 @@ int getDistance(char *message){
 }
 
 void* listen_player(void* args){
-    int sock = *(int *) args;
+    thread_args *th_args = (thread_args *) args;
+    int sock = th_args->fd;
+    //char *ip = th_args->ip;
 
     player * player_infos = NULL;
 
@@ -338,6 +347,20 @@ void* listen_player(void* args){
                 }
             }else if(strncmp(action, "MALL?", 5) == 0) {
                 //TODO: Envoye un message à tout les autres joueurs
+            }else if(strncmp(action, "SEND?", 5) == 0){
+                //TODO: Envoyer un message à un seul joueur
+                char id[8];
+                memcpy(id, message+6, 8);
+                char buff_tmp[200];
+                memcpy(buff_tmp, message+15, 200);
+                int size_tmp = strlen(buff_tmp);
+                char *mess = malloc(size_tmp-2);
+                memcpy(mess, buff_tmp, size_tmp-3);
+                mess[strlen(mess)] = '\0';
+
+                if(sendMess(sock, player_infos, id, mess) == -1){
+                    break;
+                }
             }else{
                 if(sendDunno(sock) == -1){
                     break;
@@ -356,7 +379,6 @@ void* listen_player(void* args){
         memset(message, 0, 1024);
         memmove(message, buff_tmp, buffer_size);
         free(buff_tmp);
-
     }
     /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
     Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est fini*/

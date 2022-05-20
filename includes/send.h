@@ -22,3 +22,5 @@ int sendStart(int fd, player * p);
 int sendMove(int fd, player *p, int ghost);
 
 int sendQuit(int fd);
+
+int sendMess(int fd, player *prov, char id_dest[8], char *message);
