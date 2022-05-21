@@ -876,6 +876,8 @@ int sendCol(game * g, char name1[8], char name2[8], int posx, int posy){
         char * message = malloc(len);
         memset(message, 0, len);
 
+        len = 0;
+
         memmove(message + len, col, len_col); len += len_col;
         memmove(message + len, name1, 8); len += 8;
         memmove(message + len, " ", 1); len += 1;

@@ -176,6 +176,7 @@ public class Client {
             threadUDP.start();
             threadMulticast.start();
             threadTCP.join();
+
             InGameUDP.stop();
             InGameMulticast.stop();
             inGame = false;
