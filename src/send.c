@@ -522,7 +522,7 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
             count = sendto(fd_udp, mess_UDP, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
             write(1, mess_UDP, len);
             printf("\n%d : %s\n", count, dest->ip);
-            freeaddrinfo(result);
+            //freeaddrinfo(result);
             free(mess_UDP);
             if(count == -1){
                 return -1;
@@ -538,7 +538,8 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
             return 0;
         }
         else {
-            freeaddrinfo(result);
+            //freeaddrinfo(result);
+            close(fd_udp);
         }
     }
     char *nsend = "NSEND***\0";
