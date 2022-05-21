@@ -284,22 +284,23 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 player_infos->g->nb_ready++;
                 player_infos->is_ready = 1;
-                if(player_infos->g->nb_ready == player_infos->g->nb_players) { //&& player_infos->g->nb_players > 1){
+                if(player_infos->g->nb_ready == player_infos->g->nb_players) {
                     getAMaze(player_infos->g->laby);
                     initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
                     placePlayers(player_infos->g);
                     set_port(player_infos->g);
                     player_infos->g->state_game = 2;
                     pthread_mutex_unlock(&(player_infos->g->verrou_server));
-
-                    pthread_cond_signal(&(player_infos->g->cond));
+                    for(int i=0; i<player_infos->g->nb_players-1;i++){
+                        pthread_cond_signal(&(player_infos->g->cond));
+                    }
                     pthread_t th;
                     pthread_create(&th, NULL, gameFunc, player_infos->g);
                 }else{
                     int nb_players = player_infos->g->nb_players;
                     int nb_ready = player_infos->g->nb_ready;
                     pthread_mutex_unlock(&(player_infos->g->verrou_server));
-                    while(nb_ready != nb_players) { //|| nb_players < 2){
+                    while(nb_ready != nb_players) {
                         pthread_cond_wait(&(player_infos->g->cond), &(player_infos->g->verrou_for_cond));
                         pthread_mutex_lock(&(player_infos->g->verrou_server));
                         nb_players = player_infos->g->nb_players;
