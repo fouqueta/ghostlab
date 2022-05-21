@@ -13,7 +13,6 @@ typedef struct player{
     int score;
 
     pthread_mutex_t verrou_player;
-
 } player;
 
 //Structure - Liste chainée de joueurs
@@ -48,3 +47,7 @@ player_node * remove_player(player_node * first, player * p);
 player * get_n_player(player_node * first, int n);
 
 player * init_player(char pseudo[8], char port[4]);
+
+int move_player(player *p, int x, int y);
+
+player *get_player_fromName(player_node *first, char name[8]);
