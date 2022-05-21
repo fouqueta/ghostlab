@@ -51,6 +51,6 @@ public class InGameUDP implements Runnable {
             synchronized(client) { this.inGame = client.isInGame(); }
             if (this.inGame) { e.printStackTrace(); }
         }
-        System.out.println("Je suis sortie par lem iracle du saint esprit")
+        System.out.println("Je suis sortie par lem iracle du saint esprit");
     }   
 }
