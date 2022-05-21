@@ -84,7 +84,7 @@ int getDistance(char *message){
 void* listen_player(void* args){
     thread_args *th_args = (thread_args *) args;
     int sock = th_args->fd;
-    //char *ip = th_args->ip;
+    char *ip = th_args->ip;
 
     player * player_infos = NULL;
 
@@ -132,9 +132,12 @@ void* listen_player(void* args){
                 memcpy(pseudo, message+6, 8);
                 char port[4];
                 memcpy(port, message+15, 4);
+                char ip_player[15];
+                memset(ip_player, 0, 15);
+                memcpy(ip_player, ip, strlen(ip));
 
                 int8_t m = get_empty_game();
-                player_infos = init_player(pseudo, port);
+                player_infos = init_player(pseudo, port, ip_player);
                 if(m<0){
                     if(sendRegno(sock) == -1){
                         break;
@@ -157,6 +160,9 @@ void* listen_player(void* args){
                 memcpy(pseudo, message+6, 8);
                 char port[4];
                 memcpy(port, message+15, 4);
+                char ip_player[15];
+                memset(ip_player, 0, 15);
+                memcpy(ip_player, ip, strlen(ip));
                 int8_t m = message[20];
 
                 if( m<0 || m>NB_GAMES
@@ -166,7 +172,7 @@ void* listen_player(void* args){
                         break;
                     }
                 }else{
-                    player_infos = init_player(pseudo, port);
+                    player_infos = init_player(pseudo, port, ip_player);
                     if(add_player_game(player_infos, m) == -1){
                         if(sendRegno(sock) == -1){
                             break;
@@ -209,14 +215,10 @@ void* listen_player(void* args){
                     break;
                 }
             }else if(strncmp(action, "START", 5) == 0){
-                printf("START !\n");
                 pthread_mutex_lock(&(player_infos->g->verrou_for_cond));
-                printf("START !\n");
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
-                printf("START !\n");
                 player_infos->g->nb_ready++;
                 if(player_infos->g->nb_ready == player_infos->g->nb_players) { //&& player_infos->g->nb_players > 1){
-                    printf("START !\n");
                     getAMaze(player_infos->g->laby);
                     player_infos->g->nb_ghosts = 1; //TODO 10
                     initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
@@ -229,7 +231,6 @@ void* listen_player(void* args){
                     pthread_t th;
                     pthread_create(&th, NULL, gameFunc, player_infos->g);
                 }else{
-                    printf("START !2\n");
                     int nb_players = player_infos->g->nb_players;
                     int nb_ready = player_infos->g->nb_ready;
                     pthread_mutex_unlock(&(player_infos->g->verrou_server));
@@ -281,11 +282,11 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
-                pthread_mutex_lock(&(player_infos->verrou_player));
+                pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
                 }
-                pthread_mutex_unlock(&(player_infos->verrou_player));
+                pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "DOMOV", 5) == 0){
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
@@ -309,11 +310,11 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
-                pthread_mutex_lock(&(player_infos->verrou_player));
+                pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
                 }
-                pthread_mutex_unlock(&(player_infos->verrou_player));
+                pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "LEMOV", 5) == 0){
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
@@ -337,11 +338,11 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
-                pthread_mutex_lock(&(player_infos->verrou_player));
+                pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
                 }
-                pthread_mutex_unlock(&(player_infos->verrou_player));
+                pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "RIMOV", 5) == 0){
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
@@ -365,18 +366,15 @@ void* listen_player(void* args){
                 if(sendMove(sock, player_infos, flag_ghost) == -1){
                     break;
                 }
-                pthread_mutex_lock(&(player_infos->verrou_player));
+                pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
                 }
-                pthread_mutex_unlock(&(player_infos->verrou_player));
+                pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "IQUIT", 5) == 0){
                 if(sendQuit(sock) == -1){
                     break;
                 }
-                int8_t id_g = player_infos->g->id_game;
-                remove_player_game(player_infos, id_g);
-                player_infos = NULL;
                 break;
             }else if(strncmp(action, "GLIS?", 5) == 0){
                 //Liste des joueurs dans la partie du joueur
@@ -413,8 +411,12 @@ void* listen_player(void* args){
                 }
             }
         }else{
-            //TODO: cas où la partie est finie state == 3!
-            sendDunno(sock);
+            if(player_infos->g->state_game == 3){
+                if(sendQuit(sock) == -1){
+                    break;
+                }
+                break;
+            }
         }
 
         free(action);
