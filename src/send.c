@@ -297,15 +297,15 @@ int sendStart(int fd, player * p){
     len = 0;
 
     pthread_mutex_lock(&(p->g->verrou_server));
-    int x = htole16(p->g->laby->lenX);
-    int y = htole16(p->g->laby->lenY);
+    int lx = htole16(p->g->laby->lenX);
+    int ly = htole16(p->g->laby->lenY);
 
     memmove(buffer + len, welco, len_welco); len += len_welco;
     memmove(buffer + len, &p->g->id_game, sizeof(uint8_t)); len += sizeof(uint8_t);
     memmove(buffer + len, " ", 1); len += 1;
-    memmove(buffer + len, &x, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(buffer + len, &lx, sizeof(uint16_t)); len += sizeof(uint16_t);
     memmove(buffer + len, " ", 1); len += 1;
-    memmove(buffer + len, &y, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(buffer + len, &ly, sizeof(uint16_t)); len += sizeof(uint16_t);
     memmove(buffer + len, " ", 1); len += 1;
     memmove(buffer + len, &p->g->nb_ghosts, sizeof(uint8_t)); len += sizeof(uint8_t);
     memmove(buffer + len, " ", 1); len += 1;
