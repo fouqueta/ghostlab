@@ -31,7 +31,7 @@ public class Client {
             System.exit(0);
         }   
 
-        String ip = "lulu";
+        String ip = "lulu.informatique.univ-paris-diderot.fr";
         if (args.length == 2) {
             ip = args[1];
         } 
@@ -78,7 +78,7 @@ public class Client {
     }
 
     public void doPreGameActions(InputStream is, OutputStream os) {
-        while (!this.start) { //tant que le joueur n'a pas envoyé start, le joueur peut faire certaines actions
+        while (!this.start) { //tant que le joueur n'a pas envoye start, le joueur peut faire certaines actions
             System.out.println("\nTapez");
             System.out.println("1 pour savoir la liste des parties non commencees");
             System.out.println("2 pour savoir la liste des joueurs d'une partie");
@@ -89,6 +89,7 @@ public class Client {
                 System.out.println("6 pour rejoindre une partie");
             }
             if (this.inscrit && !this.start) {
+                System.out.println("CHANGE pour changer la taille de votre labyrinthe");
                 System.out.println("START pour commencer la partie");
             }
 
@@ -133,6 +134,15 @@ public class Client {
                     }
                     else { 
                         doSTART(is, os);
+                    }
+                    break;
+                case "CHANGE":
+                    if (!this.inscrit || this.start) {
+                        err = true;
+                        System.out.println("Mauvaise commande");
+                    }
+                    else { 
+                        preGameActionSIZEM(is, os);
                     }
                     break;
                 default:
@@ -298,6 +308,49 @@ public class Client {
                 case "DUNNO":
                     if(verbeux) { System.out.println(new String(rep, 5, 3)); }
                     System.out.println("Erreur : ce numero ne correspond a aucune partie");
+                    break;
+                default:
+                    System.out.println(MESS_ERROR);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void preGameActionSIZEM(InputStream is, OutputStream os) { // [SIZEM h w***] -> [SIZEO***] ou [SIZEN***]
+        try {
+            //Envoi de la requete [SIZEM m***]
+            //On demande une hauteur
+            byte[] byteHeight = askTaille("hauteur");
+            //On demande une largeur
+            byte[] byteWidth = askTaille("largeur");
+
+            byte[] req = "SIZEM ".getBytes();
+            req = concatByteArrays(req, byteHeight);
+            req = concatByteArrays(req, " ".getBytes());
+            req = concatByteArrays(req, byteWidth);
+            req = concatByteArrays(req, "***".getBytes());
+            os.write(req);
+            os.flush();
+            short height = byteArrayToShortSwap(byteHeight, 0);
+            short width = byteArrayToShortSwap(byteWidth, 0);
+            if(verbeux) { System.out.println("SIZEM " + height + " " + width + "***"); }
+
+            //Reception de la reponse [SIZEO***] ou [SIZEN***]
+            int bytesRead = readRep(is);
+            if (bytesRead < 1) {
+                System.out.println(MESS_ERROR);
+                return;
+            }
+            String action = new String(rep, 0, 8);
+            if(verbeux) { System.out.print(action); }
+            switch (action) {
+                case "SIZEO***":
+                    System.out.println("Hauteur et largeur du labyrinthe modifiees");
+                    break;
+                case "SIZEN***":
+                    System.out.println("Erreur : modification impossible");
                     break;
                 default:
                     System.out.println(MESS_ERROR);
@@ -529,7 +582,28 @@ public class Client {
         return true;  
     }
 
-    
+
+    public byte[] askTaille(String type) {
+        System.out.println("Entrez une " + type + " de labyrinthe < 1000");
+        String taille = scanner.nextLine();
+        while (true) {
+            if (taille.chars().allMatch(Character::isDigit)) {
+                int t = Integer.parseInt(taille);
+                if (t >= 0 && t <= 9999) {
+                    break;
+                }
+            }
+            System.out.println(type + " invalide, recommencez");
+            taille = scanner.nextLine();
+        }
+        short res = Short.parseShort(taille);
+        byte[] tailleRes = new byte[2];
+        tailleRes[0] = (byte)(res & 0xff);
+        tailleRes[1] = (byte)((res >> 8) & 0xff);
+        return tailleRes;
+    }
+
+
     public byte[] askId() {
         System.out.println("Entrez un pseudo de 8 caracteres maximum");
         String id = scanner.nextLine();

@@ -32,3 +32,7 @@ int sendGhost(game *g, int x, int y);
 int sendScore(player *p);
 
 int sendEnd(game *g);
+
+int sendSizeo(int fd);
+
+int sendSizen(int fd);
