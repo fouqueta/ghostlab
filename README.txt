@@ -38,6 +38,7 @@ Les fonctionnalités supplémentaires sont:
 Chacun de ces raccourcis est associé à une requête, qui est envoyée au serveur afin d'être traitée.
 
 2. Chaque fantôme vaut un certain nombre de points.
+Un fantôme se déplace toutes les 10 secondes.
 
 3. La taille du labyrinthe est modifiable par les joueurs inscrits 
 à une partie et tant que celle-ci n'est pas commencée.
@@ -48,8 +49,7 @@ Si l'une de ces deux valeurs est égale à 0, la valeur par défaut sera celle r
 Les joueurs peuvent envoyer autant de requête qu'ils le souhaitent,
 mais la modification ne sera autorisée que toutes les 10 secondes.
 
-Le serveur répond [SIZEO***] lorsque la modification est possible
-ou [SIZEN***] si ce n'est pas possible 
+Le serveur répond [SIZEO***] lorsque la modification est possible ou [SIZEN***] si ce n'est pas possible 
 (notamment si une requête de modification a déjà été envoyée il y a moins de 10 secondes).
 
 Le temps d'attente est partagé entre cette requête et la requête [NUMGH f***].
@@ -63,7 +63,7 @@ avec f le nombre de fantômes.
 Si f est égal à 0, la valeur par défaut sera celle renseignée dans maze.h.
 De même, la modification ne sera prise en compte que toutes les 10 secondes.
 Le serveur répond [NUMGO***] lorsque la modification est possible
-ou [NUMGN***] si ce n'est pas possible 
+ou [NUMGN***] si ce n'est pas possible.
 
 Le temps d'attente est partagé entre cette requête et la requête [SIZEM h w***].
 Ces paramètres respectent la spécification du protocole de base des messages TCP.
@@ -108,7 +108,7 @@ Si plusieurs joueurs ont le même nombre de points, le gagnant sera choisi au ha
 A la manière de game.c et game.h, ces fichiers contiennent la structure de données d'un labyrinthe 
 et les méthodes associées.
 Ces méthodes permettent d'initialiser un labyrinthe et les fantômes qui s'y trouvent.
-Par défaut, la taille du labyrinthe est 30x30 avec 10 fantômes.
+Par défaut, la taille du labyrinthe est 15x15 avec 10 fantômes.
 
 ### player.c, player.h
 De même, ces fichiers contiennent la structure de données d'un joueur et les méthodes associées.
