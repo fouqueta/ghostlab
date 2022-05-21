@@ -59,7 +59,7 @@ int main(int argc, char ** argv) {
             perror("accept");
             continue;
         }
-        thread_args *th_args = malloc(sizeof(thread_args)); //TODO: free
+        thread_args *th_args = malloc(sizeof(thread_args));
         th_args->fd = *sock_player;
         th_args->ip = inet_ntoa(c.sin_addr);
 
@@ -262,6 +262,15 @@ void* listen_player(void* args){
                 }else if(sendSize(sock, game_list[m]) == -1){
                     break;
                 }
+            }else if(strncmp(action, "NBGH?", 5) == 0){
+                int8_t m = message[6];
+                if(m < 0 || m > NB_GAMES || game_list[m]->state_game == 0){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else if(sendNbgh(sock, game_list[m]) == -1){
+                    break;
+                }
             }else if(strncmp(action, "LIST?", 5) == 0){
                 int8_t m = message[6];
                 if(m<0 || m>NB_GAMES || game_list[m]->state_game == 0){
@@ -351,7 +360,6 @@ void* listen_player(void* args){
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "DOMOV", 5) == 0){
-
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;

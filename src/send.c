@@ -181,7 +181,6 @@ int sendSize(int fd, game * g){
         return -1;
     }
     return 0;
-
 }
 
 int sendList(int fd, game * g){
@@ -915,6 +914,35 @@ int sendNumgo(int fd){
 int sendNumgn(int fd){
     char *numgn = "NUMGN***\0";
     int count = send(fd, numgn, strlen(numgn), 0);
+    if(count == -1){
+        return -1;
+    }
+    return 0;
+}
+
+int sendNbgh(int fd, game *g){
+    char *nbgh = "NBGH! \0";
+    int len_nbgh = strlen(nbgh);
+    char *stars = "***\0";
+    int len_stars = strlen(stars);
+    pthread_mutex_lock(&(g->verrou_server));
+    uint8_t m = g->id_game;
+    uint8_t f = g->nb_ghosts;
+    pthread_mutex_unlock(&(g->verrou_server));
+    int len = len_nbgh + len_stars + sizeof(uint8_t)*2 + 1;
+
+    char *message = malloc(len);
+    memset(message, 0, len);
+    len = 0;
+
+    memmove(message+len, nbgh, len_nbgh); len += len_nbgh;
+    memmove(message+len, &m, sizeof(uint8_t)); len += sizeof(uint8_t);
+    memmove(message+len, " ", 1); len += 1;
+    memmove(message+len, &f, sizeof(uint8_t)); len += sizeof(uint8_t);
+    memmove(message+len, stars, len_stars); len += len_stars;
+
+    int count = send(fd, message, len, 0);
+    free(message);
     if(count == -1){
         return -1;
     }
