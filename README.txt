@@ -35,7 +35,7 @@ Toutes les fonctionnalités du protocole de base sont implémentées.
 Les fonctionnalités supplémentaires sont:
 1. Le choix des actions (par le client) se fait avec des raccourcis qui sont précisés
 à chaque étape, que ce soit dans la partie ou avant.
-Chacun de ces raccourcis est associé à une requête, qui est envoyée au serveur afin d'être traitée?
+Chacun de ces raccourcis est associé à une requête, qui est envoyée au serveur afin d'être traitée.
 
 2. Chaque fantôme vaut un certain nombre de points.
 
