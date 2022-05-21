@@ -155,11 +155,9 @@ int sendSize(int fd, game * g){
     char * size = "SIZE! \0";
     char * stars = "***\0";
     pthread_mutex_lock(&(g->verrou_server));
-    printf("ici\n");
     uint8_t m = g->id_game;
     uint16_t h = g->laby->lenX;
     uint16_t w = g->laby->lenY;
-    printf("ici\n");
     pthread_mutex_unlock(&(g->verrou_server));
 
     h = htole16(h);
