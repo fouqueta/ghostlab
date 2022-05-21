@@ -134,8 +134,8 @@ void* listen_player(void* args){
                     break;
                 }
             }else if(strncmp(action, "SIZEM", 5) == 0 && player_infos != NULL){
-                int h = (message[7]<<8)+message[6];
-                int w = (message[10]<<8)+message[9];
+                int h = (message[7]<<8) + message[6];
+                int w = (message[10]<<8) + message[9];
                 h = le16toh(h);
                 w = le16toh(w);
 
@@ -147,7 +147,7 @@ void* listen_player(void* args){
                         player_infos->g->laby->lenX = h;
                     }
 
-                    if(h == 0){
+                    if(w == 0){
                         player_infos->g->laby->lenY = Y_DEFAULT;
                     }else{
                         player_infos->g->laby->lenY = w;
@@ -163,7 +163,27 @@ void* listen_player(void* args){
                         break;
                     }
                 }
+            }else if(strncmp(action, "NUMGH", 5) == 0 && player_infos != NULL){
+                uint8_t f = message[6];
+                printf("%d\n", f);
+                time_t seconds = time(NULL);
+                if(player_infos->g->last_update == 0 || difftime(seconds, player_infos->g->last_update) >= 10){
+                    if(f == 0){
+                        player_infos->g->nb_ghosts = NB_GHOSTS_DEFAULT;
+                    }
+                    else{
+                        player_infos->g->nb_ghosts = f;
+                    }
+                    if(sendNumgo(sock) == -1){
+                        break;
+                    }
+                    player_infos->g->last_update = seconds;
 
+                }else{
+                    if(sendNumgn(sock)== -1){
+                        break;
+                    }
+                }
             }else if(strncmp(action, "NEWPL", 5) == 0 && player_infos == NULL){
                 char pseudo[8];
                 memcpy(pseudo, message+6, 8);
@@ -257,7 +277,6 @@ void* listen_player(void* args){
                 player_infos->g->nb_ready++;
                 if(player_infos->g->nb_ready == player_infos->g->nb_players) { //&& player_infos->g->nb_players > 1){
                     getAMaze(player_infos->g->laby);
-                    player_infos->g->nb_ghosts = 1; //TODO 10
                     initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
                     placePlayers(player_infos->g);
                     set_port(player_infos->g);
