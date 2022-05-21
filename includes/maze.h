@@ -4,12 +4,8 @@
 //Char - Murs
 #define CHARWALL 'X'
 
-/*
-#define X_DEFAULT 10
-#define Y_DEFAULT 10
-*/
-#define X_DEFAULT 5
-#define Y_DEFAULT 5
+#define X_DEFAULT 15
+#define Y_DEFAULT 15
 
 //Structure - Labyrinthe
 typedef struct maze{
