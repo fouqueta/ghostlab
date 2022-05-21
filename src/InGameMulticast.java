@@ -69,6 +69,18 @@ public class InGameMulticast implements Runnable {
                             client.setInGame(false); 
                         }
                         break;
+                    case "COLLI ": //[COLLI id1 id2 x y+++]
+                        String id1 = new String(dpacket.getData(), 6, 8);
+                        String id2 = new String(dpacket.getData(), 15, 8);
+                        posX = new String(dpacket.getData(), 24, 3);
+                        posY = new String(dpacket.getData(), 28, 3);
+                        if(client.isVerbeux()) { System.out.println(id1 + (new String(dpacket.getData(), 14, 1)) + id2
+                            + (new String(dpacket.getData(), 23, 1)) + posX + (new String(dpacket.getData(), 27, 1))
+                            + posY + (new String(dpacket.getData(), 31, 3))); }
+                        System.out.println("-> " + id1 + " est rentre en collision avec " + id2 + " en position (" 
+                            + posX.replaceFirst("^0+(?!$)", "") + "," + posY.replaceFirst("^0+(?!$)", "") + ") !");
+                        System.out.println(id1 + " est inconscient pendant 5 secondes");
+                        break;
                     default:
                         System.out.println("Erreur : message recu incorrect");
                         break;
