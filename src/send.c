@@ -138,7 +138,8 @@ int sendGList(int fd, game * g){
         memmove(message+len, " ", 1); len += 1;
         memmove(message+len, s, strlen(s)); len += strlen(s);
         memmove(message+len, stars, strlen(stars)); len += strlen(stars);
-
+        write(1,message, len);
+        printf("\n");
         r = send(fd, message, len, 0);
         free(message);
         if(r==-1){

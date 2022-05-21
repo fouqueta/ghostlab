@@ -374,7 +374,7 @@ void* listen_player(void* args){
                     else {
                         player * col = player_meet(player_infos, x+1, y);
                         if(col != NULL){
-                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x+1, y) == -1){
                                 break;
                             }
                             sleep(5);
@@ -410,7 +410,7 @@ void* listen_player(void* args){
                     else {
                         player * col = player_meet(player_infos, x, y-1);
                         if(col != NULL){
-                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x, y-1) == -1){
                                 break;
                             }
                             sleep(5);
@@ -446,7 +446,7 @@ void* listen_player(void* args){
                     else {
                         player * col = player_meet(player_infos, x, y+1);
                         if(col != NULL){
-                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x, y+1) == -1){
                                 break;
                             }
                             sleep(5);
