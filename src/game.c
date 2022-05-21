@@ -255,3 +255,19 @@ player *getWinner(game *g){
     }
     return win;
 }
+
+player * player_meet(player * player_info, int x, int y){
+    player_node * node = player_info->g->list.first;
+    int m = player_info->g->nb_players;
+    for(int i=0; i<m;i++){
+        if(!is_same_player(node->p, player_info)){
+            pthread_mutex_lock(&(node->p->verrou_player));
+            if(node->p->x == x && node->p->y == y){
+                pthread_mutex_unlock(&(node->p->verrou_player));
+                return node->p;
+            }
+            pthread_mutex_unlock(&(node->p->verrou_player));
+        }
+    }
+    return NULL;
+}

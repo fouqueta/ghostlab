@@ -4,6 +4,7 @@ public class InGameUDP implements Runnable {
     static final int MAX_BUFFER = 256;
     private Client client;
     private boolean inGame;
+    static DatagramSocket dso;
 
     public InGameUDP(Client c) {
         this.client = c;
@@ -12,10 +13,14 @@ public class InGameUDP implements Runnable {
         }
     }
 
+    public static void stop(){
+        dso.close();
+    }
+
     @Override
     public void run() {
         try {
-            DatagramSocket dso = new DatagramSocket(client.getPortUDP());
+            dso = new DatagramSocket(client.getPortUDP());
 
             while(inGame) {
                 byte[] rep = new byte[MAX_BUFFER];
@@ -43,7 +48,8 @@ public class InGameUDP implements Runnable {
             }
             dso.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            synchronized(client) { this.inGame = client.isInGame(); }
+            if (this.inGame) { e.printStackTrace(); }
         }
     }   
 }

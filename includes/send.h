@@ -36,3 +36,5 @@ int sendEnd(game *g);
 int sendSizeo(int fd);
 
 int sendSizen(int fd);
+
+int sendCol(game * g, char name1[8], char name2[8], int posx, int posy);

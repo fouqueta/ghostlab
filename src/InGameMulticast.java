@@ -4,6 +4,7 @@ public class InGameMulticast implements Runnable {
     static final int MAX_BUFFER = 256;
     private Client client;
     private boolean inGame;
+    static MulticastSocket mso;
 
     public InGameMulticast(Client c) {
         this.client = c;
@@ -12,10 +13,14 @@ public class InGameMulticast implements Runnable {
         }
     }
 
+    public static void stop(){
+        mso.close();
+    }
+
     @Override
     public void run() {
         try {
-            MulticastSocket mso = new MulticastSocket(client.getPortMult());
+            mso = new MulticastSocket(client.getPortMult());
             mso.joinGroup(InetAddress.getByName(client.getIPMult()));
         
             while(inGame) {
@@ -76,9 +81,10 @@ public class InGameMulticast implements Runnable {
                 synchronized(client) { inGame = client.isInGame(); }
             }
             //mso.leaveGroup(InetAddress.getByName(client.getIPMult()));
-            mso.close();
+            //mso.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            synchronized(client) { this.inGame = client.isInGame(); }
+            if (this.inGame) { e.printStackTrace(); }
         }  
     }
     

@@ -49,3 +49,5 @@ void set_port(game * g);
 int not_use(char * port);
 
 player *getWinner(game *g);
+
+player * player_meet(player * player_info, int x, int y);

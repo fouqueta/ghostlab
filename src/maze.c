@@ -28,7 +28,7 @@ void printMaze(char ** maze, int lenX, int lenY){
     {
         for(int k = 0; k<lenY; k++)
         {
-            printf("%c", maze[n][k]);
+            printf("%c ", maze[n][k]);
         }
         printf("%c", '\n');
     }

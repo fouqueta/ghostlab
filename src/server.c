@@ -305,6 +305,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x-1, y);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x-1, y);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
@@ -325,6 +332,7 @@ void* listen_player(void* args){
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "DOMOV", 5) == 0){
+
                 pthread_mutex_lock(&(player_infos->verrou_player));
                 for(int i = 0; i<distance; i++){
                     int x = player_infos->x;
@@ -333,6 +341,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x+1, y);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x+1, y);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
@@ -361,6 +376,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x, y-1);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x, y-1);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
@@ -389,6 +411,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x, y+1);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x, y+1);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;

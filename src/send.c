@@ -831,3 +831,74 @@ int sendSizen(int fd){
     }
     return 0;
 }
+
+int sendCol(game * g, char name1[8], char name2[8], int posx, int posy){
+    int fd_multi = socket(PF_INET, SOCK_DGRAM, 0);
+    struct addrinfo *result;
+    struct addrinfo hints = {
+            .ai_family = AF_INET,
+            .ai_socktype = SOCK_DGRAM
+    };
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    int annuaire = getaddrinfo(g->ip, g->port, &hints, &result);
+    if(annuaire == 0 && result != NULL){
+        char *col = "COLLI \0";
+        int len_col = strlen(col);
+        char *plus = "+++\0";
+        int len_plus = strlen(plus);
+        int len = len_col + len_plus + 8*2 + 3*2 + 3;
+
+        char x[4];
+        if(posx > 99){
+            snprintf(x, 128, "%d", posx);
+        }
+        else if(posx > 9){
+            snprintf(x, 128, "0%d", posx);
+        }
+        else{
+            snprintf(x, 128, "00%d", posx);
+        }
+        x[3] = '\0';
+
+        char y[4];
+        if(posy > 99){
+            snprintf(y, 128, "%d", posy);
+        }
+        else if(posy > 9){
+            snprintf(y, 128, "0%d", posy);
+        }
+        else{
+            snprintf(y, 128, "00%d", posy);
+        }
+        y[3] = '\0';
+
+        char * message = malloc(len);
+        memset(message, 0, len);
+
+        memmove(message + len, col, len_col); len += len_col;
+        memmove(message + len, name1, 8); len += 8;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, name2, 8); len += 8;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, x, 3); len += 3;
+        memmove(message + len, " ", 1); len += 1;
+        memmove(message + len, y, 3); len += 3;
+        memmove(message + len, plus, len_plus); len += len_plus;
+
+
+        struct sockaddr *addr = result->ai_addr;
+        int count = sendto(fd_multi, message, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
+
+        freeaddrinfo(result);
+        free(message);
+        if(count == -1){
+            return -1;
+        }
+        close(fd_multi);
+    }else {
+        freeaddrinfo(result);
+    }
+
+    return 0;
+}
