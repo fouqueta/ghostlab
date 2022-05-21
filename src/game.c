@@ -97,13 +97,13 @@ void remove_player_game(player * player_infos, int m){
 void* gameFunc(void* args){
     game * g = (game *)args;
     srand(time(NULL));
+    sleep(10);
     pthread_mutex_lock(&(g->verrou_server));
     int state = g->state_game;
     int nb_player = g->nb_players;
     int nb_ghosts = g->nb_ghosts;
+    int id_game = g->id_game;
     pthread_mutex_unlock(&(g->verrou_server));
-    sleep(10);
-
     while(state == 2 && nb_player > 0 && nb_ghosts > 0){
         int i = rand() % g->nb_ghosts;
         int bool = 1;
@@ -174,9 +174,9 @@ void* gameFunc(void* args){
         }
         sleep(10);
         pthread_mutex_lock(&(g->verrou_server));
-        state = g->state_game;
-        nb_player = g->nb_players;
-        nb_ghosts = g->nb_ghosts;
+        state = game_list[id_game]->state_game;
+        nb_player = game_list[id_game]->nb_players;
+        nb_ghosts = game_list[id_game]->nb_ghosts;
         pthread_mutex_unlock(&(g->verrou_server));
     }
 
