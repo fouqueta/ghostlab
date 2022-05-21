@@ -64,7 +64,7 @@ int sendGList(int fd, game * g){
     pthread_mutex_lock(&g->verrou_server);
     uint8_t n = g->nb_players;
 
-    char *glis = "GLIS! ";
+    char *glis = "GLIS! \0";
     char * stars = "***\0";
 
     char * mess_list = malloc(sizeof(uint8_t) + strlen(glis) + strlen(stars));
@@ -77,7 +77,6 @@ int sendGList(int fd, game * g){
     int r = send(fd, mess_list, len, 0); free(mess_list);
     if(r==-1){
         pthread_mutex_unlock(&g->verrou_server);
-        free(mess_list);
         return -1;
     }
 
@@ -93,33 +92,33 @@ int sendGList(int fd, game * g){
 
         char x[4];
         if(p->x>99){
-            snprintf(x, 128, "%d", p->x);
+            snprintf(x, 4, "%d", p->x);
         }else if(p->x>9){
-            snprintf(x, 128, "0%d", p->x);
+            snprintf(x, 4, "0%d", p->x);
         }else{
-            snprintf(x, 128, "00%d", p->x);
+            snprintf(x, 4, "00%d", p->x);
         }
         x[3] = '\0';
 
         char y[4];
         if(p->y>99){
-            snprintf(y, 128, "%d", p->y);
+            snprintf(y, 4, "%d", p->y);
         }else if(p->y>9){
-            snprintf(y, 128, "0%d", p->y);
+            snprintf(y, 4, "0%d", p->y);
         }else{
-            snprintf(y, 128, "00%d", p->y);
+            snprintf(y, 4, "00%d", p->y);
         }
         y[3] = '\0';
 
         char s[5];
         if(p->score>999) {
-            snprintf(s, 128, "%d", p->score);
+            snprintf(s, 5, "%d", p->score);
         }else if(p->score>99){
-            snprintf(s, 128, "0%d", p->score);
+            snprintf(s, 5, "0%d", p->score);
         }else if(p->score>9){
-            snprintf(s, 128, "00%d", p->score);
+            snprintf(s, 5, "00%d", p->score);
         }else{
-            snprintf(s, 128, "000%d", p->score);
+            snprintf(s, 5, "000%d", p->score);
         }
         s[4] = '\0';
         pthread_mutex_unlock(&(p->verrou_player));
@@ -138,8 +137,7 @@ int sendGList(int fd, game * g){
         memmove(message+len, " ", 1); len += 1;
         memmove(message+len, s, strlen(s)); len += strlen(s);
         memmove(message+len, stars, strlen(stars)); len += strlen(stars);
-        write(1,message, len);
-        printf("\n");
+
         r = send(fd, message, len, 0);
         free(message);
         if(r==-1){
