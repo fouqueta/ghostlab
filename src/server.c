@@ -14,6 +14,11 @@ int main(int argc, char ** argv) {
         printf("Missing port number !\n");
         exit(EXIT_FAILURE);
     }
+    int port = atoi(argv[1]);
+    if(port < 1024 || port > 49151){
+        printf("Port number too big\n");
+        exit(EXIT_FAILURE);
+    }
 
     //Creation de la socket
     int sock_server = socket(PF_INET, SOCK_STREAM, 0);
@@ -24,7 +29,7 @@ int main(int argc, char ** argv) {
 
     struct sockaddr_in addr_sock = {
         .sin_family = AF_INET,
-        .sin_port = htons(atoi(argv[1])),
+        .sin_port = htons(port),
         .sin_addr.s_addr = htonl(INADDR_ANY)
     };
 
@@ -52,7 +57,7 @@ int main(int argc, char ** argv) {
         *sock_player = accept(sock_server, (struct sockaddr *)&c, &size);
         if(*sock_player<0){
             perror("accept");
-            exit(EXIT_FAILURE);
+            continue;
         }
         thread_args *th_args = malloc(sizeof(thread_args)); //TODO: free
         th_args->fd = *sock_player;
@@ -128,6 +133,37 @@ void* listen_player(void* args){
                 if(sendGames(sock) == -1) {
                     break;
                 }
+            }else if(strncmp(action, "SIZEM", 5) == 0 && player_infos != NULL){
+                int h = (message[7]<<8)+message[6];
+                int w = (message[10]<<8)+message[9];
+                h = le16toh(h);
+                w = le16toh(w);
+
+                time_t seconds = time(NULL);
+                if(player_infos->g->last_update == 0 || difftime(seconds, player_infos->g->last_update) >= 10){
+                    if(h == 0){
+                        player_infos->g->laby->lenX = X_DEFAULT;
+                    }else{
+                        player_infos->g->laby->lenX = h;
+                    }
+
+                    if(h == 0){
+                        player_infos->g->laby->lenY = Y_DEFAULT;
+                    }else{
+                        player_infos->g->laby->lenY = w;
+                    }
+
+                    if(sendSizeo(sock) == -1){
+                        break;
+                    }
+                    player_infos->g->last_update = seconds;
+
+                }else{
+                    if(sendSizen(sock)== -1){
+                        break;
+                    }
+                }
+
             }else if(strncmp(action, "NEWPL", 5) == 0 && player_infos == NULL){
                 char pseudo[8];
                 memcpy(pseudo, message+6, 8);

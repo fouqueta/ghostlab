@@ -15,6 +15,7 @@ void init_game_list(){
 
         game_list[i]->verrou_for_cond = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
         game_list[i]->cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+        game_list[i]->last_update = 0;
     }
     pthread_mutex_unlock(&(verrou_main));
 }

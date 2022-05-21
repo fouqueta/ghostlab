@@ -813,3 +813,21 @@ int sendEnd(game *g){
     }
     return 0;
 }
+
+int sendSizeo(int fd){
+    char * sizeo = "SIZEO***\0";
+    int count = send(fd, sizeo, strlen(sizeo), 0);
+    if(count == -1){
+        return -1;
+    }
+    return 0;
+}
+
+int sendSizen(int fd){
+    char * sizen = "SIZEN***\0";
+    int count = send(fd, sizen, strlen(sizen), 0);
+    if(count == -1){
+        return -1;
+    }
+    return 0;
+}

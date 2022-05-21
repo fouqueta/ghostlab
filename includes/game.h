@@ -21,6 +21,8 @@ typedef struct game{
     pthread_mutex_t verrou_for_cond;
     pthread_cond_t cond;
 
+    time_t last_update;
+
     maze * laby;
     char * ip;
     char port[4];
