@@ -485,7 +485,7 @@ void* listen_player(void* args){
                 int size_tmp = strlen(buff_tmp);
                 char *mess = malloc(size_tmp-2);
                 memcpy(mess, buff_tmp, size_tmp-3);
-                mess[strlen(mess)] = '\0';
+                mess[strlen(mess)-1] = '\0';
 
                 if(sendMessAll(sock, player_infos, mess) == -1){
                     break;
@@ -498,7 +498,7 @@ void* listen_player(void* args){
                 int size_tmp = strlen(buff_tmp);
                 char *mess = malloc(size_tmp-2);
                 memcpy(mess, buff_tmp, size_tmp-3);
-                mess[strlen(mess)] = '\0';
+                mess[strlen(mess)-1] = '\0';
 
                 if(sendMess(sock, player_infos, id, mess) == -1){
                     break;
