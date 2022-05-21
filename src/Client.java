@@ -19,6 +19,11 @@ public class Client {
     private boolean inscrit = false;
     private Scanner scanner = new Scanner(System.in);
 
+    static int lenX;
+    static int lenY;
+    static int posX;
+    static int posY;
+
 
     public static void main(String[] args){
         if (args.length != 1) {
@@ -417,6 +422,8 @@ public class Client {
             int numPartie = rep[6] & 0xff;
             short height = byteArrayToShortSwap(rep, 8);
             short width = byteArrayToShortSwap(rep, 11);
+            lenX = height;
+            lenY = width;
             int nbGhosts = rep[14] & 0xff;
             String ipMultiDiff = new String(rep, 16, 15);
             String portMultiDiff = new String(rep, 32, 4);
@@ -445,6 +452,8 @@ public class Client {
             String id = new String(rep, 6, 8); //45
             String posX = new String(rep, 15, 3); //54
             String posY = new String(rep, 19, 3); //58
+            this.posX = Integer.parseInt(posX);
+            this.posY = Integer.parseInt(posY);
             System.out.println((new String(rep, 5, 1)) + id + (new String(rep, 14, 1)) + posX
                 + (new String(rep, 18, 1)) + posY + (new String(rep, 22, 3)));
             System.out.println(id + ", vous etes en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 

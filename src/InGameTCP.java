@@ -13,6 +13,9 @@ public class InGameTCP implements Runnable {
     private InputStream is;
     private OutputStream os;
     private Scanner scanner = new Scanner(System.in);
+    public char[][] maze;
+    int x;
+    int y;
 
     public InGameTCP(Client c, InputStream i, OutputStream o) {
         this.client = c;
@@ -21,12 +24,22 @@ public class InGameTCP implements Runnable {
         }
         this.is = i;
         this.os = o;
+        maze = new char[Client.lenX][Client.lenY];
+        x = Client.posX;
+        y = Client.posY;
+        for(int k=0;k<maze.length; k++){
+            for(int j=0;j<maze[k].length; j++){
+                maze[k][j] = '?';
+            }
+        }
+        maze[x][y] = ' ';
     }
 
     @Override
     public void run() {
         try {
             while (inGame) {
+                printMaze();
                 System.out.println("\nTapez");
                 System.out.println("Dn pour vous deplacer de n cases vers la droite (n <= 999)");
                 System.out.println("Gn pour vous deplacer de n cases vers la gauche (n <= 999)");
@@ -56,13 +69,14 @@ public class InGameTCP implements Runnable {
                     action.charAt(0)=='H' || action.charAt(0)=='B')) {
                     if (!action.substring(1).chars().allMatch(Character::isDigit)) {
                         System.out.println("Nombre de cases invalide");
-                        break;
+                        lenMess = 0;
+                    }else{
+                        inGameActionsMOV(action, is, os);
                     }
-                    inGameActionsMOV(action, is, os);
                 }
                 else {
                     System.out.println("Mauvaise commande");
-                    break;
+                    lenMess = 0;
                 }
                 // System.out.println("AVANT bRep : " + new String(bRep));
                 // System.out.println("AVANT bufSize : " + bufSize);
@@ -122,6 +136,7 @@ public class InGameTCP implements Runnable {
                     if(client.isVerbeux()) { System.out.println(posX + (new String(bRep, 9, 1)) + posY + (new String(bRep, 13, 3))); }
                     System.out.println("Vous etes maintenant en position (" + posX.replaceFirst("^0+(?!$)", "") 
                         + "," + posY.replaceFirst("^0+(?!$)", "") + ").");
+                    updateMaze(instr, Integer.parseInt(posX), Integer.parseInt(posY));
                     break;
                 case "MOVEF ":
                     posX = new String(bRep, 6, 3);
@@ -133,6 +148,7 @@ public class InGameTCP implements Runnable {
                     System.out.println("Vous avez attrape un fantome !");
                     System.out.println("Vous etes maintenant en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 
                         + posY.replaceFirst("^0+(?!$)", "") + ") avec " + score + " points.");
+                    updateMaze(instr, Integer.parseInt(posX), Integer.parseInt(posY));
                     break;
                 default: 
                     System.out.println(MESS_ERROR);
@@ -349,6 +365,69 @@ public class InGameTCP implements Runnable {
             }
         }
         return 1;
+    }
+
+    public void printMaze(){
+        int minX = x < 4 ? 0 : x-4;
+        int maxX = x > Client.lenX-4 ? Client.lenX : x+5 ;
+        int minY = y < 4 ? 0 : y-4;
+        int maxY = y > Client.lenY-4 ? Client.lenY : y+5 ;
+
+        System.out.println(maxX);
+        System.out.println(maxY);
+        System.out.println(Client.lenY);
+;
+        for(int i=minX;i< maxX; i++){
+            for(int j=minY;j< maxY; j++){
+                if(i==x && j==y)
+                    System.out.print("X ");
+                else
+                    System.out.print(maze[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    public void updateMaze(String instr, int pos_X, int pos_Y){
+        char dir = instr.charAt(0);
+        int nb = Integer.parseInt(instr.substring(1));
+
+        switch(dir){
+            case 'D':
+                for(int j = y; j <= pos_Y; j++){
+                    maze[x][j] = ' ';
+                }
+                if(y+nb != pos_Y && pos_Y+1 < Client.lenY){
+                    maze[x][pos_Y+1] = '#';
+                }
+                break;
+            case 'G':
+                for(int j = y; j>pos_Y-1; j--){
+                    maze[x][j] = ' ';
+                }
+                if(y-nb != pos_Y && pos_Y-1 > -1){
+                    maze[x][pos_Y-1] = '#';
+                }
+                break;
+            case 'H':
+                for(int i = x; i>pos_X-1; i--){
+                    maze[i][y] = ' ';
+                }
+                if(x-nb != pos_X && pos_X-1 > -1){
+                    maze[pos_X-1][y] = '#';
+                }
+                break;
+            case 'B':
+                for(int i = x; i <= pos_X; i++){
+                    maze[i][y] = ' ';
+                }
+                if(x+nb != pos_X && pos_X+1 < Client.lenX){
+                    maze[pos_X+1][y] = '#';
+                }
+                break;
+        }
+        x = pos_X;
+        y = pos_Y;
     }
     
 }
