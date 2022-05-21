@@ -84,7 +84,7 @@ int getDistance(char *message){
 void* listen_player(void* args){
     thread_args *th_args = (thread_args *) args;
     int sock = th_args->fd;
-    //char *ip = th_args->ip;
+    char *ip = th_args->ip;
 
     player * player_infos = NULL;
 
@@ -132,9 +132,12 @@ void* listen_player(void* args){
                 memcpy(pseudo, message+6, 8);
                 char port[4];
                 memcpy(port, message+15, 4);
+                char ip_player[15];
+                memset(ip_player, 0, 15);
+                memcpy(ip_player, ip, strlen(ip));
 
                 int8_t m = get_empty_game();
-                player_infos = init_player(pseudo, port);
+                player_infos = init_player(pseudo, port, ip_player);
                 if(m<0){
                     if(sendRegno(sock) == -1){
                         break;
@@ -157,6 +160,9 @@ void* listen_player(void* args){
                 memcpy(pseudo, message+6, 8);
                 char port[4];
                 memcpy(port, message+15, 4);
+                char ip_player[15];
+                memset(ip_player, 0, 15);
+                memcpy(ip_player, ip, strlen(ip));
                 int8_t m = message[20];
 
                 if( m<0 || m>NB_GAMES
@@ -166,7 +172,7 @@ void* listen_player(void* args){
                         break;
                     }
                 }else{
-                    player_infos = init_player(pseudo, port);
+                    player_infos = init_player(pseudo, port, ip_player);
                     if(add_player_game(player_infos, m) == -1){
                         if(sendRegno(sock) == -1){
                             break;

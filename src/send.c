@@ -391,7 +391,6 @@ int sendMove(int fd, player *p, int ghost){
         y[3] = '\0';
 
         char sc[5];
-        //p->score = p->score + ghost;
         if(p->score > 999){
             snprintf(sc, 128, "%d", p->score);
         }
@@ -492,8 +491,9 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
         };
         memset(&hints, 0, sizeof(struct addrinfo));
 
-        //TODO: ip du joueur destinataire
-        int annuaire = getaddrinfo("127.0.0.1", dest->port, &hints, &result);
+        char buff_port[4];
+        memcpy(buff_port, dest->port, 4);
+        int annuaire = getaddrinfo(dest->ip, buff_port, &hints, &result);
         if(annuaire == 0 && result != NULL){
             char *id_prov = prov->name;
             char *messp = "MESSP \0";
