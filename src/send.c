@@ -501,6 +501,7 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
         char buff_port[5];
         memcpy(buff_port, dest->port, 4);
         buff_port[4] = '\0';
+        printf("%s : %s\n", buff_port, dest->ip);
         int annuaire = getaddrinfo(dest->ip, buff_port, &hints, &result);
         if(annuaire == 0 && result != NULL){
             char *id_prov = prov->name;
@@ -521,7 +522,7 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
             struct sockaddr *addr = result->ai_addr;
             count = sendto(fd_udp, mess_UDP, len, 0, addr, (socklen_t) sizeof(struct sockaddr_in));
             write(1, mess_UDP, len);
-            printf("\n%d : %s\n", count, dest->ip);
+            print("\n");
             freeaddrinfo(result);
             free(mess_UDP);
             if(count == -1){
