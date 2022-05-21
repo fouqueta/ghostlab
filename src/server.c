@@ -283,6 +283,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_for_cond));
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 player_infos->g->nb_ready++;
+                player_infos->is_ready = 1;
                 if(player_infos->g->nb_ready == player_infos->g->nb_players) { //&& player_infos->g->nb_players > 1){
                     getAMaze(player_infos->g->laby);
                     initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);

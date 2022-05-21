@@ -76,7 +76,9 @@ void remove_player_game(player * player_infos, int m){
     pthread_mutex_lock(&(game_list[m]->verrou_server));
     game_list[m]->list.first = remove_player(game_list[m]->list.first, player_infos);
     game_list[m]->nb_players--;
-    game_list[m]->nb_ready--;
+    if(player_infos->is_ready == 1){
+        game_list[m]->nb_ready--;
+    }
     if(game_list[m]->nb_players == 0 && (game_list[m]->state_game == 2 || game_list[m]->state_game == 3)){
         game_list[m]->state_game = 0;
         for(int i=0;i<game_list[m]->laby->lenX;i++){

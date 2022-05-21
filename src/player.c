@@ -76,6 +76,7 @@ player * init_player(char pseudo[8], char port[4], char ip[15]){
     p->score = 0;
     p->x = 0;
     p->y = 0;
+    p->is_ready = 0;
     return p;
 }
 

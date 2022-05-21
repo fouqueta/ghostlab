@@ -12,6 +12,7 @@ typedef struct player{
     int x;
     int y;
     int score;
+    int is_ready;
 
     pthread_mutex_t verrou_player;
 } player;
