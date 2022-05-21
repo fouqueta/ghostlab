@@ -111,7 +111,6 @@ void* listen_player(void* args){
                 perror("Recv");
                 break;
             }else if(buffer_size==0){
-                printf("Error");
                 len_message = -1;
                 break;
             }
@@ -266,6 +265,9 @@ void* listen_player(void* args){
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
                             player_infos->g->nb_ghosts--;
+                            if(sendScore(player_infos) == -1){
+                                break;
+                            }
                         }
                     }
                 }
@@ -319,6 +321,9 @@ void* listen_player(void* args){
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
                             player_infos->g->nb_ghosts--;
+                            if(sendScore(player_infos) == -1){
+                                break;
+                            }
                         }
                     }
                 }
@@ -344,6 +349,9 @@ void* listen_player(void* args){
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
                             player_infos->g->nb_ghosts--;
+                            if(sendScore(player_infos) == -1){
+                                break;
+                            }
                         }
                     }
                 }
@@ -412,9 +420,12 @@ void* listen_player(void* args){
         memmove(message, buff_tmp, buffer_size);
         free(buff_tmp);
     }
-    /*TODO: Verifier si le joueur est dans une partie (commencée ou non), si c'est le cas il faut le desinscrire
-    Si on arrive ici c'est que le joueur s'est deconnecté/Une erreur s'est produite/La partie est finie*/
-    printf("Sortie\n");
+    //Cas d'erreur: Joueur s'est deconnecté, une erreur s'est produite ou la partie est finie.
+    if(player_infos->g != NULL){
+        game *g = player_infos->g;
+        remove_player_game(player_infos, g->id_game);
+        player_infos = NULL;
+    }
     free(message);
     close(sock);
 

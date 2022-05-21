@@ -542,7 +542,6 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
     return 0;
 }
 
-
 int sendMessAll(int fd, player *prov, char *message){
     int count;
     int fd_multi = socket(PF_INET, SOCK_DGRAM, 0);
@@ -661,7 +660,6 @@ int sendGhost(game *g, int g_x, int g_y){
     }
     return 0;
 }
-
 
 int sendScore(player *p){
     int count;

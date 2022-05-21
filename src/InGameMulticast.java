@@ -74,7 +74,7 @@ public class InGameMulticast implements Runnable {
                     inGame = client.isInGame(); 
                 }
             }
-            mso.leaveGroup(InetAddress.getByName(client.getIPMult()));
+            //mso.leaveGroup(InetAddress.getByName(client.getIPMult()));
             mso.close();
         } catch (Exception e) {
             e.printStackTrace();
