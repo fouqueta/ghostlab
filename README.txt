@@ -75,9 +75,19 @@ des (maximum) 9x9 cases alentours.
 Lorsqu'il rencontre un mur, '?' est remplacé par '#'.
 Si c'est un chemin, '?' sera remplacé par ' '.
 
-6. TODO collision
+6. Les joueurs peuvent rentrer en collision entre eux et s'assommer pendant 5 secondes,
+durée pendant laquelle il n'est pas possible de se déplacer.
+La partie multi-diffuse le message [COLLI id1 id2 x y+++],
+avec id1, l'id du joueur qui était en cours de déplacement et qui est rentré en
+collision avec le joueur dont l'id est id2, à la position (x,y).
+Seul le joueur dont l'id est id1 est assommé (celui en cours de déplacement).
+Ces paramètres respectent la spécification du protocole de base des messages multi-diffusés.
 
-7. Consulter nombre de fantômes
+7. A la manière de la requête [SIZE? m***], il est possible de demander le nombre de fantômes
+d'une partie.
+Le message envoyé est [NBGH? m***], avec m le numéro de la partie.
+Le serveur répond avec [NBGH! m f***] avec m le numéro de la partie et f le nombre de fantômes
+dans cette partie. Si la partie avec un numéro m n'existe pas, le serveur répond [DUNNO***].
 
 ## Architecture
 Le serveur a été développé en langage C et le client en Java.
