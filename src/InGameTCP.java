@@ -208,7 +208,7 @@ public class InGameTCP implements Runnable {
                         + posY + (new String(bRep, 22, 1)) + score + (new String(bRep, 27, 3))); }
                 score = score.replaceFirst("^0+(?!$)", "");
                 System.out.println(id + " est en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 
-                    + posY.replaceFirst("^0+(?!$)", "") + ")" + " et a " + score + " points.");
+                    + posY.replaceFirst("^0+(?!$)", "") + ")" + " et a " + score + " point(s).");
                 if (nbJoueurs != 1 && !nextRep()) {
                     return;
                 }

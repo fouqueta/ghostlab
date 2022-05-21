@@ -487,7 +487,7 @@ public class Client {
                     if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
                         + nbJoueurs + (new String(rep, 9, 3))); }
                     System.out.print("Partie " + numPartie + " : ");
-                    System.out.println(nbJoueurs + " joueurs inscrits");
+                    System.out.println(nbJoueurs + " joueur(s) inscrit(s)");
                     if (!nextRep()) {
                         return;
                     }
@@ -672,7 +672,7 @@ public class Client {
             if(verbeux) { System.out.println((new String(this.rep, 5, 1)) + numPartie + (new String(this.rep, 7, 1))
                 + nbJoueurs + (new String(this.rep, 9, 3))); }
             System.out.print("Partie " + numPartie + " : ");
-            System.out.println(nbJoueurs + " joueurs inscrits");
+            System.out.println(nbJoueurs + " joueur(s) inscrit(s)");
             if (nbParties != 1 && !nextRep()) { 
                 return false;
             }
@@ -702,7 +702,7 @@ public class Client {
     }
 
     public byte[] askValue() {
-        System.out.println("Entrez un nombre de fantome < 256");
+        System.out.println("Entrez un nombre de fantomes < 256");
         String value = scanner.nextLine();
         while (true) {
             if (value.chars().allMatch(Character::isDigit)) {
