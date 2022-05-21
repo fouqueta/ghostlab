@@ -93,7 +93,8 @@ public class InGameTCP implements Runnable {
             }
             scanner.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            synchronized(client) { this.inGame = client.isInGame(); }
+            if (this.inGame) { e.printStackTrace(); }
         }
     }
 

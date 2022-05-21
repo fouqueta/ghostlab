@@ -24,20 +24,23 @@ public class Client {
     static int posX;
     static int posY;
 
-
     public static void main(String[] args){
-        if (args.length != 1) {
-            System.out.println("Missing port number !");
+        if (args.length < 1 || args.length > 2) {
+            System.out.println("Wrong number of arguments !");
+            System.out.println("Usage : java Client nb_port (ip)");
             System.exit(0);
-        }
-        
-        //TODO: entrer ip en argument
+        }   
+
+        String ip = "lulu";
+        if (args.length == 2) {
+            ip = args[1];
+        } 
         
         Client client = new Client();
         client.portTCP = Integer.parseInt(args[0]);
 
         try{
-            Socket fdSock = new Socket("127.0.0.1", client.portTCP);
+            Socket fdSock = new Socket(ip, client.portTCP);
             InputStream is = fdSock.getInputStream();
             OutputStream os = fdSock.getOutputStream();
             
@@ -69,8 +72,7 @@ public class Client {
             os.close();
             fdSock.close();
         }
-        catch(Exception e){
-            System.out.println(e);
+        catch(Exception e) {
             e.printStackTrace();
         }
     }
@@ -154,12 +156,9 @@ public class Client {
             threadUDP.start();
             threadMulticast.start();
             threadMulticast.join();
-
-            //TODO
-            //actions postGame
-            //inGame = false; 
-            //start = false;
-            //inscrit = false;
+            inGame = false; 
+            start = false;
+            inscrit = false;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
