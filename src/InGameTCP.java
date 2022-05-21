@@ -71,6 +71,8 @@ public class InGameTCP implements Runnable {
                         System.out.println("Nombre de cases invalide");
                         synchronized(client) { this.inGame = client.isInGame(); }
                         continue;
+                    }else{
+                        inGameActionsMOV(action, is, os);
                     }
                 }
                 else {
@@ -367,14 +369,10 @@ public class InGameTCP implements Runnable {
 
     public void printMaze(){
         int minX = x < 4 ? 0 : x-4;
-        int maxX = x > Client.lenX-4 ? Client.lenX : x+5 ;
+        int maxX = x > Client.lenX-4 ? Client.lenX : x+4 ;
         int minY = y < 4 ? 0 : y-4;
-        int maxY = y > Client.lenY-4 ? Client.lenY : y+5 ;
+        int maxY = y > Client.lenY-4 ? Client.lenY : y+4 ;
 
-        System.out.println(maxX);
-        System.out.println(maxY);
-        System.out.println(Client.lenY);
-;
         for(int i=minX;i< maxX; i++){
             for(int j=minY;j< maxY; j++){
                 if(i==x && j==y)

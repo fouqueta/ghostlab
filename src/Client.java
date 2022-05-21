@@ -450,14 +450,14 @@ public class Client {
                 return;
             }
             String id = new String(rep, 6, 8); //45
-            String posX = new String(rep, 15, 3); //54
-            String posY = new String(rep, 19, 3); //58
-            this.posX = Integer.parseInt(posX);
-            this.posY = Integer.parseInt(posY);
-            System.out.println((new String(rep, 5, 1)) + id + (new String(rep, 14, 1)) + posX
-                + (new String(rep, 18, 1)) + posY + (new String(rep, 22, 3)));
-            System.out.println(id + ", vous etes en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 
-                + posY.replaceFirst("^0+(?!$)", "") + ")");
+            String pX = new String(rep, 15, 3); //54
+            String pY = new String(rep, 19, 3); //58
+            this.posX = Integer.parseInt(pX);
+            this.posY = Integer.parseInt(pY);
+            if(verbeux) { System.out.println((new String(rep, 5, 1)) + id + (new String(rep, 14, 1)) + pX
+                + (new String(rep, 18, 1)) + pY + (new String(rep, 22, 3))); }
+            System.out.println(id + ", vous etes en position (" + pX.replaceFirst("^0+(?!$)", "") + "," 
+                + pY.replaceFirst("^0+(?!$)", "") + ")");
                 
             this.start = true;
             this.inGame = true;
