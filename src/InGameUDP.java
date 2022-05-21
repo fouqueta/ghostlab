@@ -38,7 +38,7 @@ public class InGameUDP implements Runnable {
                     String id = new String(dpacket.getData(), 6, 8);
                     String mess = new String(dpacket.getData(), 15, dpacket.getLength()-18);
                     if(client.isVerbeux()) { System.out.println(id + (new String(dpacket.getData(), 14, 1)) + mess 
-                        + (new Stri2ng(dpacket.getData(), dpacket.getLength()-3, 3))); }
+                        + (new String(dpacket.getData(), dpacket.getLength()-3, 3))); }
                     System.out.println("=> " + id + " vous a dit : " + mess);
                 }
                 else {
@@ -50,7 +50,7 @@ public class InGameUDP implements Runnable {
         } catch (Exception e) {
             synchronized(client) { this.inGame = client.isInGame(); }
             if (this.inGame) { e.printStackTrace(); }
-
-        System.out.println("Je suis sortie par le miracle du saint esprit");
+        }
+        System.out.println("Je suis sortie par lem iracle du saint esprit")
     }   
 }
