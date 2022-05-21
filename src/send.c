@@ -116,7 +116,7 @@ int sendGList(int fd, game * g){
             snprintf(s, 128, "%d", p->score);
         }else if(p->score>99){
             snprintf(s, 128, "0%d", p->score);
-        }else if(p->x>9){
+        }else if(p->score>9){
             snprintf(s, 128, "00%d", p->score);
         }else{
             snprintf(s, 128, "000%d", p->score);
