@@ -155,11 +155,9 @@ int sendSize(int fd, game * g){
     char * size = "SIZE! \0";
     char * stars = "***\0";
     pthread_mutex_lock(&(g->verrou_server));
-    printf("ici\n");
     uint8_t m = g->id_game;
     uint16_t h = g->laby->lenX;
     uint16_t w = g->laby->lenY;
-    printf("ici\n");
     pthread_mutex_unlock(&(g->verrou_server));
 
     h = htole16(h);
@@ -391,7 +389,6 @@ int sendMove(int fd, player *p, int ghost){
         y[3] = '\0';
 
         char sc[5];
-        //p->score = p->score + ghost;
         if(p->score > 999){
             snprintf(sc, 128, "%d", p->score);
         }
@@ -492,8 +489,9 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
         };
         memset(&hints, 0, sizeof(struct addrinfo));
 
-        //TODO: ip du joueur destinataire
-        int annuaire = getaddrinfo("127.0.0.1", dest->port, &hints, &result);
+        char buff_port[4];
+        memcpy(buff_port, dest->port, 4);
+        int annuaire = getaddrinfo(dest->ip, buff_port, &hints, &result);
         if(annuaire == 0 && result != NULL){
             char *id_prov = prov->name;
             char *messp = "MESSP \0";

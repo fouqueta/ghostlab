@@ -66,11 +66,12 @@ player * get_n_player(player_node * first, int n){
     return get_n_player(first->next, n-1);
 }
 
-player * init_player(char pseudo[8], char port[4]){
+player * init_player(char pseudo[8], char port[4], char ip[15]){
     player *p = malloc(sizeof(player));
     p->verrou_player = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
     memcpy(p->name, pseudo, 8);
     memcpy(p->port, port, 4);
+    memcpy(p->ip, ip, 15);
 
     p->score = 0;
     p->x = 0;

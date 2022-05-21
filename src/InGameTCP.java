@@ -83,9 +83,9 @@ public class InGameTCP implements Runnable {
                 // System.out.println("AVANT bRep : " + new String(bRep));
                 // System.out.println("AVANT bufSize : " + bufSize);
                 // System.out.println("AVANT lenMess : " + lenMess);
-                bufSize -= lenMess;
-                byte[] repTmp = Arrays.copyOfRange(this.bRep, lenMess, bufSize+lenMess);
-                this.bRep = Client.recupNextRep(repTmp);
+                if (!nextRep()) {
+                    return;
+                }
                 // System.out.println("APRES bRep : " + new String(bRep));
                 // System.out.println("APRES bufSize : " + bufSize);
                 // System.out.println("APRES lenMess : " + lenMess);
@@ -179,9 +179,9 @@ public class InGameTCP implements Runnable {
             }
             int nbJoueurs = bRep[6] & 0xff;
             if(client.isVerbeux()) { System.out.println(nbJoueurs + (new String(bRep, 7, 3))); }
-            bufSize -= lenMess;
-            byte[] repTmp = Arrays.copyOfRange(bRep, lenMess, bufSize+lenMess);
-            bRep = Client.recupNextRep(repTmp);
+            if (!nextRep()) {
+                return;
+            }
 
             //Reception de s reponses [GPLYR id x y p***]
             for (; nbJoueurs != 0; nbJoueurs--) {
@@ -205,10 +205,8 @@ public class InGameTCP implements Runnable {
                 score = score.replaceFirst("^0+(?!$)", "");
                 System.out.println(id + " est en position (" + posX.replaceFirst("^0+(?!$)", "") + "," 
                     + posY.replaceFirst("^0+(?!$)", "") + ")" + " et a " + score + " points.");
-                if (nbJoueurs != 1) {
-                    bufSize -= lenMess;
-                    repTmp = Arrays.copyOfRange(bRep, lenMess, bufSize+lenMess);
-                    bRep = Client.recupNextRep(repTmp); 
+                if (nbJoueurs != 1 && !nextRep()) {
+                    return;
                 }
             }
         } catch (Exception e) {
@@ -365,6 +363,17 @@ public class InGameTCP implements Runnable {
             }
         }
         return 1;
+    }
+
+    public boolean nextRep() {
+        bufSize -= lenMess;
+        if (lenMess > bufSize+lenMess) {
+            System.out.println("Erreur");
+            return false;
+        }
+        byte[] repTmp = Arrays.copyOfRange(bRep, lenMess, bufSize+lenMess);
+        bRep = Client.recupNextRep(repTmp);
+        return true;
     }
 
     public void printMaze(){
