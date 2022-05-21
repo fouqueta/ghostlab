@@ -354,7 +354,7 @@ public class Client {
                 return;
             }
             String action = new String(rep, 0, 8);
-            if(verbeux) { System.out.print(action); }
+            if(verbeux) { System.out.println(action); }
             switch (action) {
                 case "SIZEO***":
                     System.out.println("Hauteur et largeur du labyrinthe modifiees");

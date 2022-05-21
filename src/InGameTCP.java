@@ -99,7 +99,7 @@ public class InGameTCP implements Runnable {
     }
 
     
-    // [UPMOV d***], [DOMOV d***], [LEMOV d***] ou [RIMOV d***] -> [MOVE! x y***] ou [MOVEF x y p***]
+    // [UPMOV d***], [DOMOV d***], [LEMOV d***] ou [RIMOV d***] -> [MOVE! x y***] ou [MOVEF x y p***] ou [GOBYE***]
     public void inGameActionsMOV(String instr, InputStream is, OutputStream os) {
         try {
             //Envoi d'une requete [UPMOV d***], [DOMOV d***], [LEMOV d***] ou [RIMOV d***]
@@ -122,7 +122,7 @@ public class InGameTCP implements Runnable {
             byte[] req = sreq.getBytes();
             writeReq(os, req);
 
-            //Reception de la reponse [MOVE! x y***] ou [MOVEF x y p***]
+            //Reception de la reponse [MOVE! x y***] ou [MOVEF x y p***] ou [GOBYE***]
             int bytesRead = readRep(is);
             if (bytesRead < 1) {
                 System.out.println(MESS_ERROR);
@@ -151,6 +151,10 @@ public class InGameTCP implements Runnable {
                         + posY.replaceFirst("^0+(?!$)", "") + ") avec " + score + " points.");
                     updateMaze(instr, Integer.parseInt(posX), Integer.parseInt(posY));
                     break;
+                case "GOBYE*":
+                    if(client.isVerbeux()) { System.out.println(new String(bRep, 6, 2)); }
+                    System.out.println("Action impossible : la partie est terminee.");
+                    break;
                 default: 
                     System.out.println(MESS_ERROR);
                     break;
@@ -160,7 +164,7 @@ public class InGameTCP implements Runnable {
         }
     }
 
-    public void inGameActionGLIS(InputStream is, OutputStream os) { // [GLIS?***] -> [GLIS! s***] et s messages [GPLYR id x y p***] 
+    public void inGameActionGLIS(InputStream is, OutputStream os) { // [GLIS?***] -> ([GLIS! s***] et s messages [GPLYR id x y p***]) ou [GOBYE***] 
         try {
             //Envoi de la requete [GLIS?***]
             byte[] req = "GLIS?***".getBytes();
@@ -174,7 +178,12 @@ public class InGameTCP implements Runnable {
             }
             String action = new String(bRep, 0, 6);
             if(client.isVerbeux()) { System.out.print(action); }
-            if (!action.equals("GLIS! ")) {
+            if (action.equals("GOBYE*")) {
+                    if(client.isVerbeux()) { System.out.println(new String(bRep, 6, 2)); }
+                    System.out.println("Action impossible : la partie est terminee.");
+                    return;
+            }
+            else if (!action.equals("GLIS! ")) {
                 System.out.println(MESS_ERROR);
                 return;
             }
@@ -215,7 +224,7 @@ public class InGameTCP implements Runnable {
         }
     }
 
-    public void inGameActionSEND(InputStream is, OutputStream os) { // [SEND? id mess***] -> [SEND!***] ou [NSEND***]
+    public void inGameActionSEND(InputStream is, OutputStream os) { // [SEND? id mess***] -> [SEND!***] ou [NSEND***] ou [GOBYE***]
         try {
             //Envoi de la requete [SEND? id mess***]
             //On demande un id
@@ -257,7 +266,7 @@ public class InGameTCP implements Runnable {
         }
     }
 
-    public void inGameActionMALL(InputStream is, OutputStream os) { // [MALL? mess***] -> [MALL!***]
+    public void inGameActionMALL(InputStream is, OutputStream os) { // [MALL? mess***] -> [MALL!***] ou [GOBYE***]
         try {
             //Envoi de la requete [MALL? mess***]
             //On demande un message
