@@ -15,8 +15,8 @@ void getAMaze(maze * laby){
         }
     }
     generatorMaze(laby->maze, visited, 0, 0, lenX, lenY);
-    /*printMaze(laby->maze,lenX,lenY);
-    printMaze(visited,lenX,lenY);*/
+    printMaze(laby->maze,lenX,lenY);
+    //printMaze(visited,lenX,lenY);
     for(int i=0;i<lenX;i++){
         free(visited[i]);
     }
@@ -28,7 +28,7 @@ void printMaze(char ** maze, int lenX, int lenY){
     {
         for(int k = 0; k<lenY; k++)
         {
-            printf("%c", maze[n][k]);
+            printf("%c ", maze[n][k]);
         }
         printf("%c", '\n');
     }
@@ -139,10 +139,34 @@ void initGhosts(maze * laby, int nb_ghosts){
             if(laby->maze[x][y] == CHARPATH)
                 break;
         }
-        laby->ghosts[i] = malloc(2* sizeof(int));
+        laby->ghosts[i] = malloc(3* sizeof(int));
         laby->ghosts[i][0] = x;
         laby->ghosts[i][1] = y;
-
+        laby->ghosts[i][2] = (rand() % 10) + 1;
+        printf("Fantome %d qui vaut %d points x: %d y: %d\n", i, laby->ghosts[i][2], x, y);
     }
+}
 
+int checkGhost(maze *laby, int nb_ghosts, int x, int y){
+    for(int i=0;i<nb_ghosts;i++){
+        if(laby->ghosts[i][0] == x && laby->ghosts[i][1] == y){
+            int ** ghosts = malloc(sizeof(int *)*(nb_ghosts-1));
+            int k = 0;
+            int p = laby->ghosts[i][2];
+            for(int j=0;j<nb_ghosts;j++){
+                if(j!=i){
+                    ghosts[k] = malloc(3 * sizeof(int));
+                    ghosts[k][0] = laby->ghosts[j][0];
+                    ghosts[k][1] = laby->ghosts[j][1];
+                    ghosts[k][2] = laby->ghosts[j][2];
+                    free(laby->ghosts[j]);
+                    k++;
+                }
+            }
+            free(laby->ghosts);
+            laby->ghosts = ghosts;
+            return p;
+        }
+    }
+    return 0;
 }

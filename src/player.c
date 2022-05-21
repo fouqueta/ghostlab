@@ -66,14 +66,41 @@ player * get_n_player(player_node * first, int n){
     return get_n_player(first->next, n-1);
 }
 
-player * init_player(char pseudo[8], char port[4]){
-    player * p = malloc(sizeof(player));
+player * init_player(char pseudo[8], char port[4], char ip[15]){
+    player *p = malloc(sizeof(player));
     p->verrou_player = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
     memcpy(p->name, pseudo, 8);
     memcpy(p->port, port, 4);
+    memcpy(p->ip, ip, 15);
 
     p->score = 0;
     p->x = 0;
     p->y = 0;
+    p->is_ready = 0;
     return p;
+}
+
+int move_player(player *p, int x, int y){
+    p->x = x;
+    p->y = y;
+    pthread_mutex_lock(&(p->g->verrou_server));
+    maze *lab = p->g->laby;
+    int points = checkGhost(lab, p->g->nb_ghosts, p->x, p->y);
+    if(points>0){
+        p->score = p->score + points;
+        pthread_mutex_unlock(&(p->g->verrou_server));
+        return 1;
+    }
+    pthread_mutex_unlock(&(p->g->verrou_server));
+    return 0;
+}
+
+player *get_player_fromName(player_node *first, char name[8]){
+    if(first == NULL) {
+        return NULL;
+    }
+    else if(strncmp(first->p->name, name, 8) == 0){
+        return first->p;
+    }
+    return get_player_fromName(first->next, name);
 }

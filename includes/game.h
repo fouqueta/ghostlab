@@ -3,6 +3,7 @@
 
 
 #define NB_GAMES 30
+#define NB_GHOSTS_DEFAULT 10
 
 //Structure - Parties
 typedef struct game{
@@ -20,6 +21,8 @@ typedef struct game{
 
     pthread_mutex_t verrou_for_cond;
     pthread_cond_t cond;
+
+    time_t last_update;
 
     maze * laby;
     char * ip;
@@ -45,3 +48,7 @@ void placePlayers(game * g);
 void set_port(game * g);
 
 int not_use(char * port);
+
+player *getWinner(game *g);
+
+player * player_meet(player * player_info, int x, int y);
