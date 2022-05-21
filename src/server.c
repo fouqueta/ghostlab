@@ -499,10 +499,10 @@ void* listen_player(void* args){
                 memcpy(buff_tmp, message+15, 200);
                 int size_tmp = strlen(buff_tmp);
                 char *mess = malloc(size_tmp-2);
+                memset(mess, 0, size_tmp-2);
                 memcpy(mess, buff_tmp, size_tmp-3);
                 mess[strlen(mess)] = '\0';
-                printf("message : %s\n", message);
-                printf("id : %s\n", id);
+
                 if(sendMess(sock, player_infos, id, mess) == -1){
                     break;
                 }
