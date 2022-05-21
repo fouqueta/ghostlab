@@ -296,12 +296,16 @@ int sendStart(int fd, player * p){
     memset(buffer, 0, len);
     len = 0;
 
+    pthread_mutex_lock(&(p->g->verrou_server));
+    int x = htole16(p->g->laby->lenX);
+    int y = htole16(p->g->laby->lenY);
+
     memmove(buffer + len, welco, len_welco); len += len_welco;
     memmove(buffer + len, &p->g->id_game, sizeof(uint8_t)); len += sizeof(uint8_t);
     memmove(buffer + len, " ", 1); len += 1;
-    memmove(buffer + len, &p->g->laby->lenX, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(buffer + len, &x, sizeof(uint16_t)); len += sizeof(uint16_t);
     memmove(buffer + len, " ", 1); len += 1;
-    memmove(buffer + len, &p->g->laby->lenY, sizeof(uint16_t)); len += sizeof(uint16_t);
+    memmove(buffer + len, &y, sizeof(uint16_t)); len += sizeof(uint16_t);
     memmove(buffer + len, " ", 1); len += 1;
     memmove(buffer + len, &p->g->nb_ghosts, sizeof(uint8_t)); len += sizeof(uint8_t);
     memmove(buffer + len, " ", 1); len += 1;
@@ -310,11 +314,15 @@ int sendStart(int fd, player * p){
     memmove(buffer + len, p->g->port, 4); len += 4;
     memmove(buffer + len, stars, len_stars); len += len_stars;
 
+    pthread_mutex_unlock(&(p->g->verrou_server));
+
     int r = send(fd, buffer, len, 0);
     free(buffer);
     if(r == -1){
         return -1;
     }
+
+    pthread_mutex_lock(&(p->verrou_player));
 
     char x[4];
     if(p->x>99){
@@ -347,6 +355,8 @@ int sendStart(int fd, player * p){
     memmove(message + len, " ", 1); len += 1;
     memmove(message + len, y, 3); len += 3;
     memmove(message + len, stars, len_stars); len += len_stars;
+
+    pthread_mutex_unlock(&(p->verrou_player));
 
     r = send(fd, message, len, 0);
     free(message);

@@ -109,6 +109,7 @@ void* listen_player(void* args){
             buffer_size += recv(sock, message+buffer_size, 1024-buffer_size, MSG_NOSIGNAL);
             if(buffer_size == -1){
                 perror("Recv");
+                len_message = -1;
                 break;
             }else if(buffer_size==0){
                 len_message = -1;
@@ -117,7 +118,7 @@ void* listen_player(void* args){
         }
         if(len_message == -1)
             break;
-        printf("%s\n", message);
+
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
