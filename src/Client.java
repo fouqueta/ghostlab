@@ -88,9 +88,10 @@ public class Client {
                 System.out.println("5 pour creer une nouvelle partie");
                 System.out.println("6 pour rejoindre une partie");
             }
+            System.out.println("NG pour savoir le nombre de fantomes d'une partie");
             if (this.inscrit && !this.start) {
-                System.out.println("CHANGM pour changer la taille de votre labyrinthe");
-                System.out.println("CHANGG pour changer le nombre de fantome");
+                System.out.println("CM pour changer la taille de votre labyrinthe");
+                System.out.println("CG pour changer le nombre de fantomes");
                 System.out.println("START pour commencer la partie");
             }
 
@@ -137,7 +138,7 @@ public class Client {
                         doSTART(is, os);
                     }
                     break;
-                case "CHANGM":
+                case "CM":
                     if (!this.inscrit || this.start) {
                         err = true;
                         System.out.println("Mauvaise commande");
@@ -146,7 +147,7 @@ public class Client {
                         preGameActionSIZEM(is, os);
                     }
                     break;
-                case "CHANGG":
+                case "CG":
                     if (!this.inscrit || this.start) {
                         err = true;
                         System.out.println("Mauvaise commande");
@@ -154,6 +155,9 @@ public class Client {
                     else { 
                         preGameActionNUMGH(is, os);
                     }
+                    break;
+                case "NG":
+                    preGameActionNBHG(is, os);
                     break;
                 default:
                     err = true;
@@ -328,6 +332,49 @@ public class Client {
         }
     }
 
+    public void preGameActionNBHG(InputStream is, OutputStream os) { // [NBGH? m***] -> [NBGH! m f***] ou [DUNNO***]
+        try {
+            //Envoi de la requete [NBGH? m***]
+            //On demande un numero de partie
+            byte[] bytePartie = askNumGame();
+
+            byte[] req = "NBGH? ".getBytes();
+            req = concatByteArrays(req, bytePartie);
+            req = concatByteArrays(req, "***".getBytes());
+            os.write(req);
+            os.flush();
+            if(verbeux) { System.out.println("NBGH? " + (bytePartie[0] & 0xff) + "***"); }
+
+            //Reception de la reponse [NBGH! m f***] ou [DUNNO***]
+            int bytesRead = readRep(is);
+            if (bytesRead < 1) {
+                System.out.println(MESS_ERROR);
+                return;
+            }
+            String action = new String(rep, 0, 5);
+            if(verbeux) { System.out.print(action); }
+            switch (action) {
+                case "NBGH!":
+                    int numPartie = rep[6] & 0xff;
+                    int nbFantomes = rep[8] & 0xff;
+                    if(verbeux) { System.out.println((new String(rep, 5, 1)) + numPartie + (new String(rep, 7, 1))
+                        + nbFantomes+ (new String(rep, 9, 3))); }
+                    System.out.println("Le labyrinthe de la partie " + numPartie + " a " + nbFantomes
+                        + " fantomes");
+                    break;
+                case "DUNNO":
+                    if(verbeux) { System.out.println(new String(rep, 5, 3)); }
+                    System.out.println("Erreur : ce numero ne correspond a aucune partie");
+                    break;
+                default:
+                    System.out.println(MESS_ERROR);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void preGameActionSIZEM(InputStream is, OutputStream os) { // [SIZEM h w***] -> [SIZEO***] ou [SIZEN***]
         try {
             //Envoi de la requete [SIZEM m***]
@@ -371,7 +418,7 @@ public class Client {
         }
     }
 
-    //TODO
+
     public void preGameActionNUMGH(InputStream is, OutputStream os) { // [NUMGH f***] -> [NUMGO***] ou [NUMGN***]
         try {
             //Envoi de la requete [NUMGH f***]
@@ -392,10 +439,10 @@ public class Client {
                 return;
             }
             String action = new String(rep, 0, 8);
-            if(verbeux) { System.out.print(action); }
+            if(verbeux) { System.out.println(action); }
             switch (action) {
                 case "NUMGO***":
-                    System.out.println("Nombre de fantome modifie");
+                    System.out.println("Nombre de fantomes modifie");
                     break;
                 case "NUMGN***":
                     System.out.println("Erreur : modification impossible");

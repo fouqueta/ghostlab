@@ -59,7 +59,7 @@ int main(int argc, char ** argv) {
             perror("accept");
             continue;
         }
-        thread_args *th_args = malloc(sizeof(thread_args)); //TODO: free
+        thread_args *th_args = malloc(sizeof(thread_args));
         th_args->fd = *sock_player;
         th_args->ip = inet_ntoa(c.sin_addr);
 

@@ -77,7 +77,7 @@ Si c'est un chemin, '?' sera remplacé par ' '.
 
 6. TODO collision
 
-7. Consulter nombre de fantome
+7. Consulter nombre de fantômes
 
 ## Architecture
 Le serveur a été développé en langage C et le client en Java.
