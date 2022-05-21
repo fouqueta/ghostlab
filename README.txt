@@ -64,8 +64,7 @@ Si plusieurs joueurs ont le même nombre de points, le gagnant sera choisi au ha
 ### maze.c, maze.h
 A la manière de game.c et game.h, ces fichiers contiennent les informations sur un labyrinthe.
 Ils contiennent les méthodes permettant d'initialiser un labyrinthe et les fantômes qui s'y trouvent.
-Par défaut, la taille du labyrinthe est 30x30.
-TODO: Nombre de fantômes.
+Par défaut, la taille du labyrinthe est 30x30 et 10 fantômes.
 
 ### player.c, player.h
 TODO
