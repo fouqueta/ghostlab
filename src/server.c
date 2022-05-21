@@ -421,7 +421,7 @@ void* listen_player(void* args){
         free(buff_tmp);
     }
     //Cas d'erreur: Joueur s'est deconnecté, une erreur s'est produite ou la partie est finie.
-    if(player_infos->g != NULL){
+    if(player_infos != NULL && player_infos->g != NULL){
         game *g = player_infos->g;
         remove_player_game(player_infos, g->id_game);
         player_infos = NULL;
