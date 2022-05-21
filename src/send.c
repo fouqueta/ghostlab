@@ -902,3 +902,21 @@ int sendCol(game * g, char name1[8], char name2[8], int posx, int posy){
 
     return 0;
 }
+
+int sendNumgo(int fd){
+    char *numgo = "NUMGO***\0";
+    int count = send(fd, numgo, strlen(numgo), 0);
+    if(count == -1){
+        return -1;
+    }
+    return 0;
+}
+
+int sendNumgn(int fd){
+    char *numgn = "NUMGN***\0";
+    int count = send(fd, numgn, strlen(numgn), 0);
+    if(count == -1){
+        return -1;
+    }
+    return 0;
+}

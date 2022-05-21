@@ -89,7 +89,8 @@ public class Client {
                 System.out.println("6 pour rejoindre une partie");
             }
             if (this.inscrit && !this.start) {
-                System.out.println("CHANGE pour changer la taille de votre labyrinthe");
+                System.out.println("CHANGM pour changer la taille de votre labyrinthe");
+                System.out.println("CHANGG pour changer le nombre de fantome");
                 System.out.println("START pour commencer la partie");
             }
 
@@ -136,13 +137,22 @@ public class Client {
                         doSTART(is, os);
                     }
                     break;
-                case "CHANGE":
+                case "CHANGM":
                     if (!this.inscrit || this.start) {
                         err = true;
                         System.out.println("Mauvaise commande");
                     }
                     else { 
                         preGameActionSIZEM(is, os);
+                    }
+                    break;
+                case "CHANGG":
+                    if (!this.inscrit || this.start) {
+                        err = true;
+                        System.out.println("Mauvaise commande");
+                    }
+                    else { 
+                        preGameActionNUMGH(is, os);
                     }
                     break;
                 default:
@@ -346,12 +356,50 @@ public class Client {
                 return;
             }
             String action = new String(rep, 0, 8);
-            if(verbeux) { System.out.print(action); }
+            if(verbeux) { System.out.println(action); }
             switch (action) {
                 case "SIZEO***":
                     System.out.println("Hauteur et largeur du labyrinthe modifiees");
                     break;
                 case "SIZEN***":
+                    System.out.println("Erreur : modification impossible");
+                    break;
+                default:
+                    System.out.println(MESS_ERROR);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //TODO
+    public void preGameActionNUMGH(InputStream is, OutputStream os) { // [NUMGH f***] -> [NUMGO***] ou [NUMGN***]
+        try {
+            //Envoi de la requete [NUMGH f***]
+            //On demande un nombre de fantomes
+            byte[] byteValue = askValue();
+
+            byte[] req = "NUMGH ".getBytes();
+            req = concatByteArrays(req, byteValue);
+            req = concatByteArrays(req, "***".getBytes());
+            os.write(req);
+            os.flush();
+            if(verbeux) { System.out.println("NUMGH " + (byteValue[0] & 0xfff) + "***"); }
+
+            //Reception de la reponse [NUMGO***] ou [NUMGN***]
+            int bytesRead = readRep(is);
+            if (bytesRead < 1) {
+                System.out.println(MESS_ERROR);
+                return;
+            }
+            String action = new String(rep, 0, 8);
+            if(verbeux) { System.out.print(action); }
+            switch (action) {
+                case "NUMGO***":
+                    System.out.println("Nombre de fantome modifie");
+                    break;
+                case "NUMGN***":
                     System.out.println("Erreur : modification impossible");
                     break;
                 default:
@@ -603,6 +651,22 @@ public class Client {
         tailleRes[0] = (byte)(res & 0xff);
         tailleRes[1] = (byte)((res >> 8) & 0xff);
         return tailleRes;
+    }
+
+    public byte[] askValue() {
+        System.out.println("Entrez un nombre de fantome < 256");
+        String value = scanner.nextLine();
+        while (true) {
+            if (value.chars().allMatch(Character::isDigit)) {
+                int t = Integer.parseInt(value);
+                if (t >= 0 && t <= 255) {
+                    break;
+                }
+            }
+            System.out.println("Valeur invalide, recommencez");
+            value = scanner.nextLine();
+        }
+        return new byte[] { (byte) Integer.parseInt(value) };
     }
 
 

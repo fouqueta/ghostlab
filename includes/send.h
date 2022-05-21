@@ -38,3 +38,7 @@ int sendSizeo(int fd);
 int sendSizen(int fd);
 
 int sendCol(game * g, char name1[8], char name2[8], int posx, int posy);
+
+int sendNumgo(int fd);
+
+int sendNumgn(int fd);

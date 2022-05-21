@@ -50,6 +50,7 @@ void init_a_game(int m){
     game_list[m]->laby = malloc(sizeof(maze));
     game_list[m]->laby->lenX = X_DEFAULT;
     game_list[m]->laby->lenY = Y_DEFAULT;
+    game_list[m]->nb_ghosts = NB_GHOSTS_DEFAULT;
     pthread_mutex_unlock(&(game_list[m]->verrou_server));
 }
 

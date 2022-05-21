@@ -3,6 +3,7 @@
 
 
 #define NB_GAMES 30
+#define NB_GHOSTS_DEFAULT 10
 
 //Structure - Parties
 typedef struct game{
