@@ -46,7 +46,7 @@ public class InGameUDP implements Runnable {
                 }
                 synchronized(client) { this.inGame = client.isInGame(); }
             }
-            dso.close();
+            //dso.close();
         } catch (Exception e) {
             synchronized(client) { this.inGame = client.isInGame(); }
             if (this.inGame) { e.printStackTrace(); }

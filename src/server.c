@@ -357,6 +357,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "DOMOV", 5) == 0){
@@ -392,6 +393,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "LEMOV", 5) == 0){
@@ -427,6 +429,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "RIMOV", 5) == 0){
@@ -462,6 +465,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "IQUIT", 5) == 0){
