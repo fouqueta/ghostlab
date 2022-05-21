@@ -84,8 +84,9 @@ int move_player(player *p, int x, int y){
     p->y = y;
     pthread_mutex_lock(&(p->g->verrou_server));
     maze *lab = p->g->laby;
-    if(checkGhost(lab, p->g->nb_ghosts, p->x, p->y)==1){
-        p->score = p->score + 1;
+    int points = checkGhost(lab, p->g->nb_ghosts, p->x, p->y);
+    if(points>0){
+        p->score = p->score + points;
         pthread_mutex_unlock(&(p->g->verrou_server));
         return 1;
     }
