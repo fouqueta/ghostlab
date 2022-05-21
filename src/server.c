@@ -16,7 +16,7 @@ int main(int argc, char ** argv) {
     }
     int port = atoi(argv[1]);
     if(port < 1024 || port > 49151){
-        printf("Port number too big\n");
+        printf("Wrong port number !\n");
         exit(EXIT_FAILURE);
     }
 
@@ -165,7 +165,6 @@ void* listen_player(void* args){
                 }
             }else if(strncmp(action, "NUMGH", 5) == 0 && player_infos != NULL){
                 uint8_t f = message[6];
-                printf("%d\n", f);
                 time_t seconds = time(NULL);
                 if(player_infos->g->last_update == 0 || difftime(seconds, player_infos->g->last_update) >= 10){
                     if(f == 0){
