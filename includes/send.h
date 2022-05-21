@@ -36,3 +36,7 @@ int sendEnd(game *g);
 int sendSizeo(int fd);
 
 int sendSizen(int fd);
+
+int sendNumgo(int fd);
+
+int sendNumgn(int fd);
