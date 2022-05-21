@@ -376,9 +376,6 @@ void* listen_player(void* args){
                 if(sendQuit(sock) == -1){
                     break;
                 }
-                int8_t id_g = player_infos->g->id_game;
-                remove_player_game(player_infos, id_g);
-                player_infos = NULL;
                 break;
             }else if(strncmp(action, "GLIS?", 5) == 0){
                 //Liste des joueurs dans la partie du joueur
@@ -415,8 +412,12 @@ void* listen_player(void* args){
                 }
             }
         }else{
-            //TODO: cas où la partie est finie state == 3!
-            sendDunno(sock);
+            if(player_infos->g->state_game == 3){
+                if(sendQuit(sock) == -1){
+                    break;
+                }
+                break;
+            }
         }
 
         free(action);
