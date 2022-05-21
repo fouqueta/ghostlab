@@ -107,7 +107,7 @@ la liste des joueurs de la partie, initialiser un joueur et le déplacer ou
 vérifier que deux joueurs n'ont pas le même nom.
 
 ### send.c, send.h
-Ces fichiers contiennent les méthodes relatives à l'envoi de message au client.
+Ces fichiers contiennent les méthodes relatives à l'envoi de messages au client.
 
 ### Client.java, InGameMulticast.java, InGameTCP.java, InGameUDP.java
 Le programme principal du client est Client.java et il utilise les services
