@@ -54,9 +54,9 @@ public class Client {
             if (!client.doGAMESandOGAME(is)) { //S'il y a eu une erreur
                 client.close(fdSock, is, os, client.scanner);
             }
-            client.bufferSize -= client.lenMessage;
-            byte[] repTmp = Arrays.copyOfRange(client.rep, client.lenMessage, client.bufferSize+client.lenMessage);
-            client.rep = client.recupNextRep(repTmp);
+            if (!client.nextRep()) { 
+                client.close(fdSock, is, os, client.scanner);
+            }
 
             //On gere les actions possibles avant une partie
             client.doPreGameActions(is, os);
@@ -138,10 +138,8 @@ public class Client {
                     System.out.println("Mauvaise commande");
                     break;
             }
-            if (!err) {
-                bufferSize -= lenMessage;
-                byte[] repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
-                rep = recupNextRep(repTmp);
+            if (!err && !nextRep()) {
+                return;
             }
         }
     }
@@ -340,9 +338,9 @@ public class Client {
                         + nbJoueurs + (new String(rep, 9, 3))); }
                     System.out.print("Partie " + numPartie + " : ");
                     System.out.println(nbJoueurs + " joueurs inscrits");
-                    bufferSize -= lenMessage;
-                    byte[] repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
-                    rep = recupNextRep(repTmp);
+                    if (!nextRep()) {
+                        return;
+                    }
 
                     //Reception de s reponse(s) [PLAYR id***]
                     for (; nbJoueurs != 0; nbJoueurs--) {
@@ -361,9 +359,9 @@ public class Client {
                         if(verbeux) { System.out.println((new String(rep, 5, 1)) + id + (new String(rep, 14, 3))); }
                         System.out.println(id);
                         if (nbJoueurs!=1) { 
-                            bufferSize -= lenMessage;
-                            repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
-                            rep = recupNextRep(repTmp);
+                            if (!nextRep()) {
+                                return;
+                            }
                         }
                     }
                     break;
@@ -433,9 +431,9 @@ public class Client {
                 + portMultiDiff + (new String(rep, 36, 3))); }
             System.out.println("\nBienvenue !\nLe labyrinthe a pour hauteur " + height
                 + ", pour largeur " + width + " et il y a " + nbGhosts + " fantomes a capturer !\nBONNE CHANCE\n");
-            bufferSize -= lenMessage;
-            byte[] repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
-            rep = recupNextRep(repTmp);
+            if (!nextRep()) {
+                return;
+            }
             
             //On s'occupe de [POSIT id x y***]
             int bytesRead2 = readRep(is);
@@ -502,9 +500,9 @@ public class Client {
             System.out.println("Aucune partie en attente");
             return true;
         }
-        bufferSize -= lenMessage;
-        byte[] repTmp = Arrays.copyOfRange(this.rep, lenMessage, bufferSize+lenMessage);
-        this.rep = recupNextRep(repTmp);
+        if (!nextRep()) {
+            return false;
+        }
 
         //Reception des reponses [OGAME m s***]
         for (; nbParties != 0; nbParties--) {
@@ -525,10 +523,8 @@ public class Client {
                 + nbJoueurs + (new String(this.rep, 9, 3))); }
             System.out.print("Partie " + numPartie + " : ");
             System.out.println(nbJoueurs + " joueurs inscrits");
-            if (nbParties != 1) { 
-                bufferSize -= lenMessage;
-                repTmp = Arrays.copyOfRange(this.rep, lenMessage, bufferSize+lenMessage);
-                this.rep = recupNextRep(repTmp); 
+            if (nbParties != 1 && !nextRep()) { 
+                return false;
             }
         }
         return true;  
@@ -589,6 +585,17 @@ public class Client {
             rep[i] = nextRep[i];
         }
         return rep;
+    }
+
+    public boolean nextRep() {
+        bufferSize -= lenMessage;
+        if (lenMessage > bufferSize+lenMessage) {
+            System.out.println("Erreur");
+            return false;
+        }
+        byte[] repTmp = Arrays.copyOfRange(rep, lenMessage, bufferSize+lenMessage);
+        rep = recupNextRep(repTmp);
+        return true;
     }
 
     public int readRep(InputStream is) throws IOException {

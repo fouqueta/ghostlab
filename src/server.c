@@ -117,7 +117,7 @@ void* listen_player(void* args){
         }
         if(len_message == -1)
             break;
-
+        printf("%s\n", message);
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
@@ -215,10 +215,14 @@ void* listen_player(void* args){
                     break;
                 }
             }else if(strncmp(action, "START", 5) == 0){
+                printf("START !\n");
                 pthread_mutex_lock(&(player_infos->g->verrou_for_cond));
+                printf("START !\n");
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
+                printf("START !\n");
                 player_infos->g->nb_ready++;
                 if(player_infos->g->nb_ready == player_infos->g->nb_players) { //&& player_infos->g->nb_players > 1){
+                    printf("START !\n");
                     getAMaze(player_infos->g->laby);
                     player_infos->g->nb_ghosts = 1; //TODO 10
                     initGhosts(player_infos->g->laby, player_infos->g->nb_ghosts);
@@ -231,6 +235,7 @@ void* listen_player(void* args){
                     pthread_t th;
                     pthread_create(&th, NULL, gameFunc, player_infos->g);
                 }else{
+                    printf("START !2\n");
                     int nb_players = player_infos->g->nb_players;
                     int nb_ready = player_infos->g->nb_ready;
                     pthread_mutex_unlock(&(player_infos->g->verrou_server));
@@ -244,6 +249,7 @@ void* listen_player(void* args){
                 }
 
                 pthread_mutex_unlock(&(player_infos->g->verrou_for_cond));
+
                 if(sendStart(sock, player_infos)==-1){
                     break;
                 }
