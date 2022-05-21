@@ -498,8 +498,9 @@ int sendMess(int fd, player *prov, char id_dest[8], char *message){
         };
         memset(&hints, 0, sizeof(struct addrinfo));
 
-        char buff_port[4];
+        char buff_port[5];
         memcpy(buff_port, dest->port, 4);
+        buff_port[4] = '\0';
         int annuaire = getaddrinfo(dest->ip, buff_port, &hints, &result);
         if(annuaire == 0 && result != NULL){
             char *id_prov = prov->name;

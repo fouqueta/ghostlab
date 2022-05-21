@@ -99,7 +99,7 @@ player *get_player_fromName(player_node *first, char name[8]){
     if(first == NULL) {
         return NULL;
     }
-    else if(strcmp(first->p->name, name) == 0){
+    else if(strncmp(first->p->name, name, 8) == 0){
         return first->p;
     }
     return get_player_fromName(first->next, name);
