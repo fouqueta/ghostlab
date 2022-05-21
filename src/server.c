@@ -127,6 +127,8 @@ void* listen_player(void* args){
         char * action = malloc(6);
         memcpy(action, message, 5);
         action[5] = '\0';
+        write(1,message, len_message);
+        printf("\n");
         if(player_infos == NULL || player_infos->g->state_game == 1){
             //Cas si les joueurs n'est dans aucune partie ou la partie n'as pas commencée
             if(strncmp(action, "GAME?", 5) == 0 && len_message == 8){
@@ -499,7 +501,8 @@ void* listen_player(void* args){
                 char *mess = malloc(size_tmp-2);
                 memcpy(mess, buff_tmp, size_tmp-3);
                 mess[strlen(mess)] = '\0';
-
+                printf("message : %s", message);
+                printf("id : %s", id);
                 if(sendMess(sock, player_infos, id, mess) == -1){
                     break;
                 }
