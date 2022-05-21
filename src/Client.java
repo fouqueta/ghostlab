@@ -66,7 +66,7 @@ public class Client {
 
             //On gere les actions possibles pendant une partie
             client.doInGameActions(client, is, os);
-            
+
             client.scanner.close();
             is.close();
             os.close();
@@ -179,8 +179,11 @@ public class Client {
             threadTCP.start();
             threadUDP.start();
             threadMulticast.start();
-            threadMulticast.join();
-            inGame = false; 
+            threadTCP.join();
+
+            InGameUDP.stop();
+            InGameMulticast.stop();
+            inGame = false;
             start = false;
             inscrit = false;
         } catch (InterruptedException e) {

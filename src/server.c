@@ -262,6 +262,15 @@ void* listen_player(void* args){
                 }else if(sendSize(sock, game_list[m]) == -1){
                     break;
                 }
+            }else if(strncmp(action, "NBGH?", 5) == 0){
+                int8_t m = message[6];
+                if(m < 0 || m > NB_GAMES || game_list[m]->state_game == 0){
+                    if(sendDunno(sock) == -1){
+                        break;
+                    }
+                }else if(sendNbgh(sock, game_list[m]) == -1){
+                    break;
+                }
             }else if(strncmp(action, "LIST?", 5) == 0){
                 int8_t m = message[6];
                 if(m<0 || m>NB_GAMES || game_list[m]->state_game == 0){
@@ -324,6 +333,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x-1, y);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x-1, y);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
@@ -341,6 +357,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "DOMOV", 5) == 0){
@@ -352,6 +369,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x+1, y);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x+1, y);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
@@ -369,6 +393,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "LEMOV", 5) == 0){
@@ -380,6 +405,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x, y-1);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x, y-1);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
@@ -397,6 +429,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "RIMOV", 5) == 0){
@@ -408,6 +441,13 @@ void* listen_player(void* args){
                         break;
                     }
                     else {
+                        player * col = player_meet(player_infos, x, y+1);
+                        if(col != NULL){
+                            if(sendCol(player_infos->g, player_infos->name, col->name, x-1, y) == -1){
+                                break;
+                            }
+                            sleep(5);
+                        }
                         res_move = move_player(player_infos, x, y+1);
                         if(res_move == 1){
                             flag_ghost = flag_ghost + 1;
@@ -425,6 +465,7 @@ void* listen_player(void* args){
                 pthread_mutex_lock(&(player_infos->g->verrou_server));
                 if(player_infos->g->nb_ghosts == 0){
                     sendEnd(player_infos->g);
+                    player_infos->g->state_game = 3;
                 }
                 pthread_mutex_unlock(&(player_infos->g->verrou_server));
             }else if(strncmp(action, "IQUIT", 5) == 0){
